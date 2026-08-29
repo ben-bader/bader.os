@@ -1,62 +1,113 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Inter } from 'next/font/google'
+import { Geist, Inter } from 'next/font/google'
 import './globals.css'
-import { profile, socials } from '@/content/data'
-import { AppProviders } from '@/components/providers/AppProviders'
+import { identity } from '@/lib/content'
+import SkipLink from '@/components/ui/SkipLink'
 
-const display = Fraunces({
+const display = Geist({
   variable: '--font-display',
-  subsets: ['latin'],
-  display: 'swap',
+  subsets:  ['latin'],
+  display:  'swap',
 })
 
-const body = Inter({
+const bodyFont = Inter({
   variable: '--font-body',
-  subsets: ['latin'],
-  display: 'swap',
+  subsets:  ['latin'],
+  display:  'swap',
 })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://baderbennani.dev'),
   title: {
-    default: 'Bader Bennani — Full-Stack Engineer & Software Architecture',
-    template: '%s | Bader Bennani — Full-Stack Engineer',
+    default:  'Bader Bennani — Computer Engineering Student',
+    template: '%s | Bader Bennani',
   },
   description:
-    'Full-stack engineer specializing in React, Next.js, Laravel, and Spring Boot, with a focus on secure, scalable application architecture. Based in Meknès, Morocco.',
+    'Computer Engineering student at EILCO in Calais, France. Building scalable full-stack applications with Spring Boot, Next.js, Laravel, and PostgreSQL.',
+  keywords: [
+    'Bader Bennani',
+    'Computer Engineering Student',
+    'Full Stack Developer',
+    'Spring Boot',
+    'Next.js',
+    'React',
+    'France',
+    'EILCO',
+    'Microservices',
+    'PostgreSQL',
+    'Laravel',
+  ],
+  authors:  [{ name: 'Bader Bennani', url: 'https://github.com/ben-bader' }],
+  creator:  'Bader Bennani',
   openGraph: {
-    type: 'website',
-    title: 'Bader Bennani — Full-Stack Engineer & Software Architecture',
-    description:
-      'Full-stack engineer specializing in React, Next.js, Laravel, and Spring Boot, with a focus on secure, scalable application architecture.',
+    type:        'website',
+    url:         'https://baderbennani.dev',
+    title:       'Bader Bennani — Computer Engineering Student',
+    description: 'Building scalable full-stack applications. Spring Boot · Next.js · Laravel · PostgreSQL.',
+    siteName:    'Bader Bennani',
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: {
+    card:        'summary_large_image',
+    title:       'Bader Bennani — Computer Engineering Student',
+    description: 'Building scalable full-stack applications. Spring Boot · Next.js · Laravel · PostgreSQL.',
+  },
+  robots: {
+    index:  true,
+    follow: true,
+    googleBot: {
+      index:              true,
+      follow:             true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet':       -1,
+    },
+  },
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: '#F7F5F2',
-  width: 'device-width',
+  colorScheme:  'dark',
+  themeColor:   '#020204',
+  width:        'device-width',
   initialScale: 1,
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const personSchema = {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const schema = {
     '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: profile.name,
-    jobTitle: 'Full-Stack Software Engineer',
-    url: 'https://baderbennani.dev',
-    sameAs: [socials.github.url, socials.linkedin.url],
-    alumniOf: 'École Supérieure de Technologie – Meknès',
+    '@type':    'Person',
+    name:       identity.name,
+    jobTitle:   identity.title,
+    url:        'https://baderbennani.dev',
+    email:      identity.email,
+    address:    { '@type': 'PostalAddress', addressLocality: 'Calais', addressCountry: 'FR' },
+    sameAs:     [identity.github, identity.linkedin],
+    knowsAbout: [
+      'JavaScript', 'TypeScript', 'Java', 'PHP',
+      'React', 'Next.js', 'Spring Boot', 'Laravel',
+      'PostgreSQL', 'MySQL', 'SQLite', 'MongoDB',
+      'Docker', 'RabbitMQ', 'REST APIs', 'Microservices',
+    ],
+    alumniOf: {
+      '@type': 'CollegeOrUniversity',
+      name:    'École Supérieure de Technologie – Meknès',
+    },
   }
 
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${display.variable} ${bodyFont.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      </head>
       <body>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
-        <a className="skip-link" href="#main">Skip to content</a>
-        <AppProviders>{children}</AppProviders>
+        <SkipLink />
+        {children}
       </body>
     </html>
   )

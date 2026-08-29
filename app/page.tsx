@@ -1,5 +1,5 @@
-import { HomeExperience } from '@/components/HomeExperience'
+import SystemOS from '@/components/os/SystemOS'
 
-export default function Home(): React.ReactElement {
-  return <HomeExperience />
+export default function HomePage() {
+  return <SystemOS />
 }
