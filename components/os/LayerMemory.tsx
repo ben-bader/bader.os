@@ -1,11 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useInView } from '@/hooks/useInView'
 import { education, internships, projectSystems } from '@/lib/content'
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TYPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface TimelineEvent {
   readonly id: string
-  readonly sortDate: string  // YYYY-MM for sorting
+  readonly sortDate: string
   readonly displayDate: string
   readonly title: string
   readonly category: 'education' | 'internship' | 'project' | 'diploma'
@@ -21,9 +26,11 @@ interface TimelineEvent {
   readonly status: 'current' | 'completed' | 'active'
 }
 
-// Chronological timeline: 2024 education → 2025 internship/projects → 2026 internship/diploma/education/projects
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TIMELINE DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 const TIMELINE: TimelineEvent[] = [
-  // 2024 – Started DUT
   {
     id: 'est-meknes',
     sortDate: '2024-01',
@@ -39,12 +46,10 @@ const TIMELINE: TimelineEvent[] = [
     responsibilities: [
       'Completed a two-year university technology diploma',
       'Built foundational software engineering knowledge',
-      'Developed skills in web development and database design'
+      'Developed skills in web development and database design',
     ],
     status: 'completed',
   },
-
-  // 2025 – June: ONEE Internship
   {
     id: 'onee',
     sortDate: '2025-06',
@@ -61,8 +66,6 @@ const TIMELINE: TimelineEvent[] = [
     responsibilities: internships[0].responsibilities,
     status: 'completed',
   },
-
-  // 2025 – Innovex Project
   {
     id: 'innovex',
     sortDate: '2025-07',
@@ -77,8 +80,6 @@ const TIMELINE: TimelineEvent[] = [
     github: projectSystems.find(p => p.id === 'innovex')!.github,
     status: 'completed',
   },
-
-  // 2025 – ONEE-SYS Project
   {
     id: 'onee-sys',
     sortDate: '2025-08',
@@ -93,8 +94,6 @@ const TIMELINE: TimelineEvent[] = [
     github: projectSystems.find(p => p.id === 'onee-sys')!.github,
     status: 'completed',
   },
-
-  // 2026 – April-June: 2SIS Internship
   {
     id: '2sis',
     sortDate: '2026-04',
@@ -111,8 +110,6 @@ const TIMELINE: TimelineEvent[] = [
     responsibilities: internships[1].responsibilities,
     status: 'completed',
   },
-
-  // 2026 – June: DUT Diploma Obtained
   {
     id: 'diploma',
     sortDate: '2026-06',
@@ -123,17 +120,16 @@ const TIMELINE: TimelineEvent[] = [
     color: '#9f7aea',
     organization: 'DUT Génie Informatique',
     location: 'Meknès, Morocco',
-    description: 'Successfully completed the two-year DUT diploma in Computer Engineering. A foundation of software engineering principles, web development, databases, and networks.',
+    description:
+      'Successfully completed the two-year DUT diploma in Computer Engineering. A foundation of software engineering principles, web development, databases, and networks.',
     stack: [],
     responsibilities: [
       'Completed comprehensive engineering diploma',
       'Demonstrated proficiency in core CS concepts',
-      'Ready for advanced engineering studies'
+      'Ready for advanced engineering studies',
     ],
     status: 'completed',
   },
-
-  // 2026 – Started EILCO
   {
     id: 'eilco',
     sortDate: '2026-07',
@@ -141,20 +137,18 @@ const TIMELINE: TimelineEvent[] = [
     title: 'Computer Engineering',
     category: 'education',
     categoryLabel: 'Education',
-    color: '#9f7aea',
-    organization: 'EILCO — École d\'Ingénieurs du Littoral Côte d\'Opale',
+    color: '#63b3ed',
+    organization: "EILCO — École d'Ingénieurs du Littoral Côte d'Opale",
     location: 'Calais, France',
     description: education[0].description,
     stack: ['Software Engineering', 'Full-Stack', 'Databases', 'Distributed Systems'],
     responsibilities: [
       'Currently pursuing engineering degree in Computer Engineering',
       'Building on DUT foundation with advanced studies',
-      'Developing full-stack and distributed systems expertise'
+      'Developing full-stack and distributed systems expertise',
     ],
     status: 'current',
   },
-
-  // 2026 – AtlasHR Project
   {
     id: 'atlashr',
     sortDate: '2026-08',
@@ -169,8 +163,6 @@ const TIMELINE: TimelineEvent[] = [
     github: projectSystems.find(p => p.id === 'atlashr')!.github,
     status: 'active',
   },
-
-  // 2026 – Homely Project
   {
     id: 'homely',
     sortDate: '2026-09',
@@ -185,8 +177,6 @@ const TIMELINE: TimelineEvent[] = [
     github: projectSystems.find(p => p.id === 'homely')!.github,
     status: 'active',
   },
-
-  // 2026 – Portfolio
   {
     id: 'portfolio',
     sortDate: '2026-10',
@@ -195,50 +185,103 @@ const TIMELINE: TimelineEvent[] = [
     category: 'project',
     categoryLabel: 'Project',
     color: '#e2e8f0',
-    description: 'Portfolio and personal developer OS — designed as a minimalist interface highlighting my education, internship experiences, and software projects.',
+    description:
+      'Portfolio and personal developer OS — designed as a minimalist interface highlighting my education, internship experiences, and software projects.',
     stack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Portfolio Design'],
-    responsibilities: ['Portfolio architecture and design', 'Career timeline presentation', 'Project showcase'],
+    responsibilities: [
+      'Portfolio architecture and design',
+      'Career timeline presentation',
+      'Project showcase',
+    ],
     github: 'https://github.com/ben-bader',
     status: 'active',
   },
 ]
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DETERMINISTIC LAYOUT CONFIG
+   No Math.random(). All values fixed by index.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+interface EventLayout {
+  side: 'left' | 'right'
+  cardOffsetX: number   // px shift applied to card for organic feel
+  marginBottom: number  // px
+}
+
+const EVENT_LAYOUTS: EventLayout[] = [
+  { side: 'left',  cardOffsetX: -18, marginBottom: 72  },
+  { side: 'right', cardOffsetX:  24, marginBottom: 88  },
+  { side: 'left',  cardOffsetX: -8,  marginBottom: 66  },
+  { side: 'right', cardOffsetX:  14, marginBottom: 84  },
+  { side: 'left',  cardOffsetX: -28, marginBottom: 70  },
+  { side: 'right', cardOffsetX:  20, marginBottom: 90  },
+  { side: 'left',  cardOffsetX: -12, marginBottom: 64  },
+  { side: 'right', cardOffsetX:  30, marginBottom: 80  },
+  { side: 'left',  cardOffsetX: -20, marginBottom: 68  },
+  { side: 'right', cardOffsetX:  16, marginBottom: 56  },
+]
+
+function getLayout(index: number): EventLayout {
+  return EVENT_LAYOUTS[index % EVENT_LAYOUTS.length]
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONSTANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 const MONO = "'SF Mono','Fira Code',monospace"
 
 function getStatusLabel(status: 'current' | 'completed' | 'active'): string {
   if (status === 'current') return '● CURRENT'
-  if (status === 'active') return '● ACTIVE'
+  if (status === 'active')  return '● ACTIVE'
   return ''
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HEADER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 function TimelineHeader() {
   return (
-    <div className="os-container relative z-10" style={{ paddingTop: 'var(--sp-7)', paddingBottom: 'var(--sp-4)' }}>
+    <div
+      className="os-container relative z-10"
+      style={{ paddingTop: 'var(--sp-7)', paddingBottom: 'var(--sp-4)' }}
+    >
       <div className="layer-header" style={{ marginBottom: 'var(--sp-3)' }}>
         <span className="t-system" style={{ color: 'var(--pulse)' }}>L02 / MEMORY</span>
         <div className="wire-h" style={{ width: '42px' }} />
         <span className="t-system">{TIMELINE.length} MILESTONES</span>
       </div>
 
-      <h2 className="t-heading gradient-text layer-title" style={{ marginBottom: 'var(--sp-2)' }}>
+      <h2
+        className="t-heading gradient-text layer-title"
+        style={{ marginBottom: 'var(--sp-2)' }}
+      >
         My journey.
       </h2>
 
-      <p style={{
-        maxWidth: '760px',
-        margin: 0,
-        fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize: 'clamp(0.9rem, 1.6vw, 1.05rem)',
-        color: 'var(--text-2)',
-        lineHeight: 1.7,
-      }}>
+      <p
+        style={{
+          maxWidth: '760px',
+          margin: 0,
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: 'clamp(0.9rem, 1.6vw, 1.05rem)',
+          color: 'var(--text-2)',
+          lineHeight: 1.7,
+        }}
+      >
         A chronological timeline of my education, internships, and software projects.
       </p>
     </div>
   )
 }
 
-function TimelineEvent({
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TIMELINE CARD (collapsed summary)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function TimelineCard({
   event,
   isSelected,
   onSelect,
@@ -249,142 +292,164 @@ function TimelineEvent({
   onSelect: () => void
   reduced: boolean
 }>) {
-  const transition = reduced ? 'none' : 'all 0.35s ease'
-
   return (
-    <div key={event.id} className="timeline-event">
-      <button
-        type="button"
-        aria-pressed={isSelected}
-        onClick={onSelect}
-        className="timeline-card"
+    <button
+      type="button"
+      aria-pressed={isSelected}
+      onClick={onSelect}
+      style={{
+        display: 'block',
+        width: '100%',
+        textAlign: 'left',
+        borderTopWidth: '1px',
+        borderTopStyle: 'solid',
+        borderTopColor: isSelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
+        borderRightWidth: '1px',
+        borderRightStyle: 'solid',
+        borderRightColor: isSelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: isSelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
+        borderLeftWidth: '2px',
+        borderLeftStyle: 'solid',
+        borderLeftColor: isSelected ? event.color : `${event.color}55`,
+        background: isSelected ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.01)',
+        borderRadius: '10px',
+        padding: '16px 18px',
+        cursor: 'pointer',
+        color: 'var(--text-0)',
+        transition: reduced ? 'none' : 'all 0.3s ease',
+        transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: isSelected
+          ? `0 8px 24px rgba(0,0,0,0.18), 0 0 0 1px ${event.color}22`
+          : 'none',
+      }}
+    >
+      {/* Category pill */}
+      <div
         style={{
-          textAlign: 'left',
-          borderTopWidth: '1px',
-          borderTopStyle: 'solid',
-          borderTopColor: isSelected ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-          borderRightWidth: '1px',
-          borderRightStyle: 'solid',
-          borderRightColor: isSelected ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-          borderBottomWidth: '1px',
-          borderBottomStyle: 'solid',
-          borderBottomColor: isSelected ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-          borderLeftWidth: '2px',
-          borderLeftStyle: 'solid',
-          borderLeftColor: `${event.color}80`,
-          background: isSelected ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.01)',
-          borderRadius: '10px',
-          padding: '16px 18px',
-          cursor: 'pointer',
-          color: 'var(--text-0)',
-          transition,
-          transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
-          opacity: isSelected ? 1 : 0.96,
-          boxShadow: isSelected ? '0 10px 24px rgba(0,0,0,0.15)' : 'none',
-        }}
-      >
-        <div style={{
           display: 'inline-flex',
-          marginBottom: '12px',
+          marginBottom: '10px',
           borderTopWidth: '1px',
           borderTopStyle: 'solid',
-          borderTopColor: 'rgba(255,255,255,0.12)',
+          borderTopColor: 'rgba(255,255,255,0.1)',
           borderRightWidth: '1px',
           borderRightStyle: 'solid',
-          borderRightColor: 'rgba(255,255,255,0.12)',
+          borderRightColor: 'rgba(255,255,255,0.1)',
           borderBottomWidth: '1px',
           borderBottomStyle: 'solid',
-          borderBottomColor: 'rgba(255,255,255,0.12)',
+          borderBottomColor: 'rgba(255,255,255,0.1)',
           borderLeftWidth: '1px',
           borderLeftStyle: 'solid',
-          borderLeftColor: 'rgba(255,255,255,0.12)',
+          borderLeftColor: 'rgba(255,255,255,0.1)',
           borderRadius: '999px',
-          padding: '4px 8px',
+          padding: '3px 8px',
           fontFamily: MONO,
-          fontSize: '0.52rem',
+          fontSize: '0.5rem',
           letterSpacing: '1.6px',
-          textTransform: 'uppercase',
+          textTransform: 'uppercase' as const,
           color: 'var(--text-2)',
           background: 'rgba(255,255,255,0.02)',
-        }}>
-          {event.categoryLabel}
-        </div>
+        }}
+      >
+        {event.categoryLabel}
+      </div>
 
-        <div style={{
+      {/* Date + status row */}
+      <div
+        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
-          marginBottom: '12px',
+          gap: '8px',
+          marginBottom: '10px',
           fontFamily: MONO,
-          fontSize: '0.57rem',
+          fontSize: '0.55rem',
           letterSpacing: '2px',
           color: 'var(--text-3)',
-          textTransform: 'uppercase',
-        }}>
-          <span>{event.displayDate}</span>
-          <span>{getStatusLabel(event.status)}</span>
-        </div>
+          textTransform: 'uppercase' as const,
+        }}
+      >
+        <span>{event.displayDate}</span>
+        {getStatusLabel(event.status) && (
+          <span style={{ color: event.status === 'current' ? 'var(--pulse)' : 'var(--active)' }}>
+            {getStatusLabel(event.status)}
+          </span>
+        )}
+      </div>
 
-        <h3 style={{
+      {/* Title */}
+      <h3
+        style={{
           margin: 0,
           fontFamily: MONO,
-          fontSize: '1.02rem',
+          fontSize: '0.98rem',
           lineHeight: 1.3,
           color: 'var(--text-0)',
           fontWeight: 400,
-          marginBottom: '8px',
-        }}>
-          {event.title}
-        </h3>
+          marginBottom: '6px',
+        }}
+      >
+        {event.title}
+      </h3>
 
-        {(event.role || event.organization) && (
-          <div style={{
+      {/* Organization */}
+      {(event.role || event.organization) && (
+        <div
+          style={{
             fontFamily: MONO,
-            fontSize: '0.56rem',
+            fontSize: '0.54rem',
             letterSpacing: '1.2px',
-            textTransform: 'uppercase',
+            textTransform: 'uppercase' as const,
             color: 'var(--text-2)',
-            marginBottom: '12px',
-          }}>
-            {event.role && <div>{event.role}</div>}
-            {event.organization && <div>{event.organization}</div>}
-          </div>
-        )}
+            marginBottom: '10px',
+            lineHeight: 1.6,
+          }}
+        >
+          {event.role && <div>{event.role}</div>}
+          {event.organization && <div>{event.organization}</div>}
+        </div>
+      )}
 
-        <p style={{
-          marginTop: '0',
-          marginBottom: '14px',
+      {/* Short description */}
+      <p
+        style={{
+          margin: '0 0 12px',
           fontFamily: 'Inter, system-ui, sans-serif',
-          fontSize: '0.8rem',
-          lineHeight: 1.7,
+          fontSize: '0.77rem',
+          lineHeight: 1.65,
           color: 'var(--text-2)',
-        }}>
-          {event.description}
-        </p>
+        }}
+      >
+        {event.description.length > 120
+          ? `${event.description.slice(0, 120).trimEnd()}…`
+          : event.description}
+      </p>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-          {event.stack.slice(0, 4).map(tech => (
+      {/* Stack tags (up to 3) */}
+      {event.stack.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '5px', marginBottom: '10px' }}>
+          {event.stack.slice(0, 3).map(tech => (
             <span
               key={tech}
               style={{
                 fontFamily: MONO,
-                fontSize: '0.54rem',
+                fontSize: '0.5rem',
                 letterSpacing: '1.2px',
-                padding: '4px 7px',
+                padding: '3px 7px',
                 borderRadius: '4px',
                 borderTopWidth: '1px',
                 borderTopStyle: 'solid',
-                borderTopColor: 'rgba(255,255,255,0.08)',
+                borderTopColor: 'rgba(255,255,255,0.07)',
                 borderRightWidth: '1px',
                 borderRightStyle: 'solid',
-                borderRightColor: 'rgba(255,255,255,0.08)',
+                borderRightColor: 'rgba(255,255,255,0.07)',
                 borderBottomWidth: '1px',
                 borderBottomStyle: 'solid',
-                borderBottomColor: 'rgba(255,255,255,0.08)',
+                borderBottomColor: 'rgba(255,255,255,0.07)',
                 borderLeftWidth: '1px',
                 borderLeftStyle: 'solid',
-                borderLeftColor: 'rgba(255,255,255,0.08)',
+                borderLeftColor: 'rgba(255,255,255,0.07)',
                 color: 'var(--text-1)',
                 background: 'rgba(255,255,255,0.01)',
               }}
@@ -393,39 +458,39 @@ function TimelineEvent({
             </span>
           ))}
         </div>
+      )}
 
-        <span style={{
+      {/* View details CTA */}
+      <span
+        style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '6px',
+          gap: '5px',
           fontFamily: MONO,
-          fontSize: '0.56rem',
+          fontSize: '0.52rem',
           letterSpacing: '1.8px',
-          textTransform: 'uppercase',
-          color: 'var(--pulse)',
-        }}>
-          View details <span aria-hidden="true">→</span>
-        </span>
-      </button>
-
-      {isSelected && (
-        <div className="timeline-details">
-          <TimelineDetails event={event} reduced={reduced} />
-        </div>
-      )}
-    </div>
+          textTransform: 'uppercase' as const,
+          color: isSelected ? event.color : 'var(--pulse)',
+          transition: reduced ? 'none' : 'color 0.25s ease',
+        }}
+      >
+        {isSelected ? 'Collapse' : 'View details'} <span aria-hidden="true">→</span>
+      </span>
+    </button>
   )
 }
 
-function TimelineDetails({
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DETAILS PANEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function DetailsPanel({
   event,
   reduced,
 }: Readonly<{
   event: TimelineEvent
   reduced: boolean
 }>) {
-  const transition = reduced ? 'none' : 'opacity 0.35s ease, transform 0.35s ease'
-
   return (
     <aside
       aria-live="polite"
@@ -444,103 +509,115 @@ function TimelineDetails({
         borderLeftWidth: '1px',
         borderLeftStyle: 'solid',
         borderLeftColor: 'rgba(255,255,255,0.08)',
-        background: 'rgba(11, 12, 20, 0.85)',
+        background: 'rgba(8, 8, 18, 0.88)',
         borderRadius: '12px',
         padding: '18px 18px 16px',
-        transition,
-        opacity: 1,
-        transform: 'translateY(0)',
+        animation: reduced ? 'none' : 'detailsReveal 0.35s ease forwards',
       }}
     >
-      <div style={{
-        marginBottom: '14px',
-        fontFamily: MONO,
-        fontSize: '0.56rem',
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        color: event.color,
-      }}>
+      {/* Category + date */}
+      <div
+        style={{
+          marginBottom: '12px',
+          fontFamily: MONO,
+          fontSize: '0.54rem',
+          letterSpacing: '2px',
+          textTransform: 'uppercase' as const,
+          color: event.color,
+        }}
+      >
         {event.categoryLabel} · {event.displayDate}
       </div>
 
-      <h3 style={{
-        margin: '0 0 10px',
-        fontFamily: MONO,
-        fontSize: 'clamp(1.1rem, 2vw, 1.45rem)',
-        lineHeight: 1.25,
-        color: 'var(--text-0)',
-        fontWeight: 400,
-      }}>
+      {/* Title */}
+      <h3
+        style={{
+          margin: '0 0 8px',
+          fontFamily: MONO,
+          fontSize: 'clamp(1rem, 2vw, 1.35rem)',
+          lineHeight: 1.25,
+          color: 'var(--text-0)',
+          fontWeight: 400,
+        }}
+      >
         {event.title}
       </h3>
 
+      {/* Meta */}
       {(event.role || event.organization || event.location) && (
-        <div style={{
-          marginBottom: '14px',
-          fontFamily: MONO,
-          fontSize: '0.56rem',
-          letterSpacing: '1.8px',
-          textTransform: 'uppercase',
-          color: 'var(--text-2)',
-          display: 'grid',
-          gap: '4px',
-        }}>
-          {event.role && <div>{event.role}</div>}
+        <div
+          style={{
+            marginBottom: '12px',
+            fontFamily: MONO,
+            fontSize: '0.54rem',
+            letterSpacing: '1.8px',
+            textTransform: 'uppercase' as const,
+            color: 'var(--text-2)',
+            display: 'grid',
+            gap: '3px',
+          }}
+        >
+          {event.role         && <div>{event.role}</div>}
           {event.organization && <div>{event.organization}</div>}
-          {event.location && <div>{event.location}</div>}
+          {event.location     && <div>{event.location}</div>}
         </div>
       )}
 
-      <div style={{
-        height: '1px',
-        background: 'rgba(255,255,255,0.08)',
-        marginBottom: '14px',
-      }} />
+      {/* Divider */}
+      <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', marginBottom: '12px' }} />
 
-      <p style={{
-        margin: '0 0 18px',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize: '0.8rem',
-        lineHeight: 1.8,
-        color: 'var(--text-2)',
-      }}>
+      {/* Description */}
+      <p
+        style={{
+          margin: '0 0 16px',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: '0.78rem',
+          lineHeight: 1.78,
+          color: 'var(--text-2)',
+        }}
+      >
         {event.description}
       </p>
 
+      {/* Highlights */}
       {event.responsibilities.length > 0 && (
-        <div style={{ marginBottom: '18px' }}>
-          <div style={{
-            marginBottom: '8px',
-            fontFamily: MONO,
-            fontSize: '0.54rem',
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
-            color: 'var(--text-3)',
-          }}>
+        <div style={{ marginBottom: '16px' }}>
+          <div
+            style={{
+              marginBottom: '7px',
+              fontFamily: MONO,
+              fontSize: '0.52rem',
+              letterSpacing: '2px',
+              textTransform: 'uppercase' as const,
+              color: 'var(--text-3)',
+            }}
+          >
             Highlights
           </div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '8px' }}>
-            {event.responsibilities.map((item, index) => (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '7px' }}>
+            {event.responsibilities.map((item, i) => (
               <li
-                key={`${event.id}-resp-${index}`}
+                key={`${event.id}-r${i}`}
                 style={{
                   display: 'flex',
                   gap: '10px',
                   alignItems: 'flex-start',
                   fontFamily: 'Inter, system-ui, sans-serif',
-                  fontSize: '0.76rem',
+                  fontSize: '0.74rem',
                   lineHeight: 1.6,
                   color: 'var(--text-2)',
                 }}
               >
-                <span style={{
-                  width: '5px',
-                  height: '5px',
-                  borderRadius: '50%',
-                  background: event.color,
-                  marginTop: '7px',
-                  flexShrink: 0,
-                }} />
+                <span
+                  style={{
+                    width: '4px',
+                    height: '4px',
+                    borderRadius: '50%',
+                    background: event.color,
+                    marginTop: '7px',
+                    flexShrink: 0,
+                  }}
+                />
                 {item}
               </li>
             ))}
@@ -548,41 +625,43 @@ function TimelineDetails({
         </div>
       )}
 
+      {/* Stack */}
       {event.stack.length > 0 && (
-        <div style={{ marginBottom: '18px' }}>
-          <div style={{
-            marginBottom: '8px',
-            fontFamily: MONO,
-            fontSize: '0.54rem',
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
-            color: 'var(--text-3)',
-          }}>
+        <div style={{ marginBottom: '16px' }}>
+          <div
+            style={{
+              marginBottom: '7px',
+              fontFamily: MONO,
+              fontSize: '0.52rem',
+              letterSpacing: '2px',
+              textTransform: 'uppercase' as const,
+              color: 'var(--text-3)',
+            }}
+          >
             Technology Stack
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '5px' }}>
             {event.stack.map(tech => (
               <span
                 key={tech}
                 style={{
                   fontFamily: MONO,
-                  fontSize: '0.54rem',
+                  fontSize: '0.52rem',
                   letterSpacing: '1.2px',
-                  lineHeight: 1.5,
-                  padding: '5px 8px',
-                  borderRadius: '6px',
+                  padding: '4px 7px',
+                  borderRadius: '5px',
                   borderTopWidth: '1px',
                   borderTopStyle: 'solid',
-                  borderTopColor: 'rgba(255,255,255,0.08)',
+                  borderTopColor: 'rgba(255,255,255,0.07)',
                   borderRightWidth: '1px',
                   borderRightStyle: 'solid',
-                  borderRightColor: 'rgba(255,255,255,0.08)',
+                  borderRightColor: 'rgba(255,255,255,0.07)',
                   borderBottomWidth: '1px',
                   borderBottomStyle: 'solid',
-                  borderBottomColor: 'rgba(255,255,255,0.08)',
+                  borderBottomColor: 'rgba(255,255,255,0.07)',
                   borderLeftWidth: '1px',
                   borderLeftStyle: 'solid',
-                  borderLeftColor: 'rgba(255,255,255,0.08)',
+                  borderLeftColor: 'rgba(255,255,255,0.07)',
                   color: 'var(--text-1)',
                   background: 'rgba(255,255,255,0.01)',
                 }}
@@ -594,6 +673,7 @@ function TimelineDetails({
         </div>
       )}
 
+      {/* GitHub link */}
       {event.github && (
         <a
           href={event.github}
@@ -602,11 +682,11 @@ function TimelineDetails({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '5px',
             fontFamily: MONO,
-            fontSize: '0.56rem',
+            fontSize: '0.54rem',
             letterSpacing: '1.8px',
-            textTransform: 'uppercase',
+            textTransform: 'uppercase' as const,
             color: 'var(--pulse)',
             textDecoration: 'none',
           }}
@@ -617,73 +697,401 @@ function TimelineDetails({
     </aside>
   )
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TIMELINE ROW — alternating left / right
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function TimelineRow({
+  event,
+  index,
+  isSelected,
+  onSelect,
+  reduced,
+}: Readonly<{
+  event: TimelineEvent
+  index: number
+  isSelected: boolean
+  onSelect: () => void
+  reduced: boolean
+}>) {
+  const layout = getLayout(index)
+  const isLeft = layout.side === 'left'
+
+  const { ref: rowRef, inView } = useInView<HTMLDivElement>({
+    threshold: 0.12,
+    once: true,
+  })
+
+  // Connector animation: draws from card edge toward the central dot
+  // left side: connector extends rightward from card to center dot
+  // right side: connector extends leftward from card to center dot
+
+  return (
+    <div
+      ref={rowRef}
+      style={{ marginBottom: `${layout.marginBottom}px`, position: 'relative' }}
+      data-timeline-row
+    >
+      {/* ── DESKTOP: grid layout ── */}
+      <div className="tl-row-desktop">
+        {/* Left slot */}
+        <div className="tl-slot tl-slot-left">
+          {isLeft && (
+            <div
+              className="tl-card-wrap tl-card-left"
+              style={{
+                transform: inView
+                  ? `translateX(${layout.cardOffsetX}px)`
+                  : `translateX(${layout.cardOffsetX - 24}px)`,
+                opacity: inView ? 1 : 0,
+                transition: reduced
+                  ? 'none'
+                  : `opacity 0.45s ease 0.3s, transform 0.45s var(--ease-sys) 0.3s`,
+              }}
+            >
+              <TimelineCard
+                event={event}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                reduced={reduced}
+              />
+              {isSelected && (
+                <div className="tl-details-inline" style={{ marginTop: '14px' }}>
+                  <DetailsPanel event={event} reduced={reduced} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Center column: connector + marker */}
+        <div className="tl-center">
+          {/* Connector line */}
+          <svg
+            className={`tl-connector tl-connector-${isLeft ? 'left' : 'right'}`}
+            aria-hidden="true"
+            style={{
+              opacity: inView ? 1 : 0,
+              transition: reduced ? 'none' : `opacity 0.3s ease ${0.15}s`,
+            }}
+          >
+            <line
+              x1={isLeft ? '100%' : '0%'}
+              y1="50%"
+              x2={isLeft ? '0%' : '100%'}
+              y2="50%"
+              stroke="rgba(255,255,255,0.12)"
+              strokeWidth="1"
+              className={inView && !reduced ? 'tl-connector-line-animate' : ''}
+              style={{
+                strokeDasharray: '100%',
+                strokeDashoffset: inView && !reduced ? '0' : '100%',
+                transition: reduced ? 'none' : `stroke-dashoffset 0.55s var(--ease-sys) ${0.2}s`,
+              }}
+            />
+          </svg>
+
+          {/* Marker dot */}
+          <div
+            className={`tl-marker ${isSelected ? 'tl-marker-active' : ''}`}
+            style={{
+              background: isSelected ? event.color : 'rgba(255,255,255,0.18)',
+              boxShadow: isSelected ? `0 0 10px ${event.color}88` : 'none',
+              opacity: inView ? 1 : 0,
+              transform: inView ? 'scale(1)' : 'scale(0.4)',
+              transition: reduced
+                ? 'none'
+                : `opacity 0.3s ease ${0.1}s, transform 0.35s var(--ease-sys) ${0.1}s, background 0.25s ease, box-shadow 0.25s ease`,
+            }}
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Right slot */}
+        <div className="tl-slot tl-slot-right">
+          {!isLeft && (
+            <div
+              className="tl-card-wrap tl-card-right"
+              style={{
+                transform: inView
+                  ? `translateX(${layout.cardOffsetX}px)`
+                  : `translateX(${layout.cardOffsetX + 24}px)`,
+                opacity: inView ? 1 : 0,
+                transition: reduced
+                  ? 'none'
+                  : `opacity 0.45s ease 0.3s, transform 0.45s var(--ease-sys) 0.3s`,
+              }}
+            >
+              <TimelineCard
+                event={event}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                reduced={reduced}
+              />
+              {isSelected && (
+                <div className="tl-details-inline" style={{ marginTop: '14px' }}>
+                  <DetailsPanel event={event} reduced={reduced} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── MOBILE: single column ── */}
+      <div className="tl-row-mobile">
+        {/* Marker + connector row */}
+        <div className="tl-mobile-marker-row">
+          <div
+            className={`tl-marker ${isSelected ? 'tl-marker-active' : ''}`}
+            style={{
+              background: isSelected ? event.color : 'rgba(255,255,255,0.18)',
+              boxShadow: isSelected ? `0 0 10px ${event.color}88` : 'none',
+              transition: reduced ? 'none' : 'background 0.25s ease, box-shadow 0.25s ease',
+            }}
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Card */}
+        <div
+          style={{
+            opacity: inView ? 1 : 0,
+            transform: inView ? 'translateY(0)' : 'translateY(16px)',
+            transition: reduced ? 'none' : 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
+          }}
+        >
+          <TimelineCard
+            event={event}
+            isSelected={isSelected}
+            onSelect={onSelect}
+            reduced={reduced}
+          />
+          {isSelected && (
+            <div style={{ marginTop: '12px' }}>
+              <DetailsPanel event={event} reduced={reduced} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   VERTICAL TIMELINE LINE (SVG, draws on mount)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function TimelineLine({ reduced }: Readonly<{ reduced: boolean }>) {
+  const { ref, inView } = useInView<HTMLDivElement>({ threshold: 0.04, once: true })
+  return (
+    <div ref={ref} className="tl-line-wrap" aria-hidden="true">
+      <div
+        className="tl-line"
+        style={{
+          transform: inView ? 'scaleY(1)' : 'scaleY(0)',
+          transition: reduced ? 'none' : 'transform 0.7s var(--ease-sys)',
+        }}
+      />
+    </div>
+  )
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ROOT EXPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 export default function LayerMemory() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [reduced, setReduced] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  })
+  const [reduced, setReduced] = useState<boolean>(false)
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const handler = (event: MediaQueryListEvent | MediaQueryList) => setReduced(event.matches)
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => setReduced(e.matches)
     handler(media)
     media.addEventListener('change', handler)
     return () => media.removeEventListener('change', handler)
   }, [])
 
   const handleSelect = useCallback((id: string) => {
-    setSelectedId(current => current === id ? null : id)
+    setSelectedId(cur => (cur === id ? null : id))
   }, [])
 
   return (
-    <section id="layer-memory" className="os-section" aria-label="Layer 02: Memory" style={{ background: 'var(--void)' }}>
+    <section
+      id="layer-memory"
+      className="os-section"
+      aria-label="Layer 02: Memory"
+      style={{ background: 'var(--void)' }}
+    >
+      {/* ── Scoped styles ── */}
       <style>{`
-        .timeline-container {
-          display: block;
-          max-width: 1200px;
+        /* ── Timeline container ── */
+        .tl-outer {
+          position: relative;
+          max-width: 1100px;
           margin-inline: auto;
         }
 
-        .timeline-event {
+        /* ── Desktop row: 3-column grid ── */
+        .tl-row-desktop {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          gap: 24px;
-          align-items: start;
-          margin-bottom: 48px;
+          grid-template-columns: 1fr 56px 1fr;
+          align-items: center;
+          gap: 0;
+        }
+        .tl-row-mobile {
+          display: none;
         }
 
-        .timeline-card {
+        /* Card slot constraints */
+        .tl-slot {
+          display: flex;
+          min-width: 0;
+        }
+        .tl-slot-left  { justify-content: flex-end;  padding-right: 0; }
+        .tl-slot-right { justify-content: flex-start; padding-left: 0; }
+
+        .tl-card-wrap {
           width: 100%;
-          max-width: 600px;
+          max-width: 520px;
+        }
+        .tl-card-left  { margin-right: 0; }
+        .tl-card-right { margin-left: 0;  }
+
+        /* Hover nudge — slight outward nudge; override handled per-card via JS transform */
+        .tl-card-left:hover  { filter: brightness(1.04); }
+        .tl-card-right:hover { filter: brightness(1.04); }
+
+        /* ── Center column ── */
+        .tl-center {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          z-index: 2;
         }
 
-        .timeline-details {
+        /* ── Connector SVG ── */
+        .tl-connector {
+          position: absolute;
+          top: 50%;
+          height: 1px;
+          width: 56px;
+          overflow: visible;
+          pointer-events: none;
+        }
+        .tl-connector-left  { right: 50%; transform: translateY(-50%); }
+        .tl-connector-right { left: 50%;  transform: translateY(-50%); }
+
+        /* ── Marker dot ── */
+        .tl-marker {
+          position: relative;
+          z-index: 3;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .tl-marker-active {
+          width: 11px;
+          height: 11px;
+        }
+
+        /* ── Vertical timeline line ── */
+        .tl-line-wrap {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 1px;
+          z-index: 1;
+          pointer-events: none;
+        }
+        .tl-line {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(255,255,255,0.08) 6%,
+            rgba(255,255,255,0.08) 94%,
+            transparent 100%
+          );
+          transform-origin: top center;
+        }
+
+        /* ── Details inline (desktop) ── */
+        .tl-details-inline {
           width: 100%;
         }
 
-        .timeline-event button:focus-visible,
-        .timeline-details a:focus-visible {
+        /* ── Mobile layout ── */
+        @media (max-width: 767px) {
+          .tl-row-desktop { display: none; }
+          .tl-row-mobile {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            gap: 0 12px;
+            align-items: start;
+          }
+          .tl-mobile-marker-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 18px;
+          }
+          /* Mobile vertical line through center of marker column */
+          .tl-outer::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            left: calc(var(--container-px) + 15px);
+            width: 1px;
+            background: rgba(255,255,255,0.06);
+            pointer-events: none;
+          }
+          .tl-line-wrap { display: none; }
+        }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .tl-card-wrap { max-width: 420px; }
+        }
+
+        /* ── Detail panel entrance ── */
+        @keyframes detailsReveal {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Focus rings ── */
+        .tl-row-desktop button:focus-visible,
+        .tl-row-mobile  button:focus-visible,
+        .tl-details-inline a:focus-visible {
           outline: 2px solid var(--pulse);
           outline-offset: 3px;
         }
 
-        @media (max-width: 768px) {
-          .timeline-event {
-            grid-template-columns: 1fr;
-            gap: 16px;
-            margin-bottom: 32px;
-          }
-
-          .timeline-card {
-            max-width: none;
-          }
-        }
-
+        /* ── Reduced motion override ── */
         @media (prefers-reduced-motion: reduce) {
-          * {
+          .tl-line,
+          .tl-marker,
+          .tl-connector,
+          .tl-card-wrap,
+          .tl-row-mobile > div {
             animation: none !important;
             transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            translate: none !important;
+          }
+          @keyframes detailsReveal {
+            from { opacity: 1; transform: none; }
+            to   { opacity: 1; transform: none; }
           }
         }
       `}</style>
@@ -691,11 +1099,16 @@ export default function LayerMemory() {
       <TimelineHeader />
 
       <div className="os-container" style={{ paddingBottom: 'var(--sp-7)' }}>
-        <div className="timeline-container">
-          {TIMELINE.map(event => (
-            <TimelineEvent
+        <div className="tl-outer">
+          {/* Vertical center line */}
+          <TimelineLine reduced={reduced} />
+
+          {/* Events */}
+          {TIMELINE.map((event, index) => (
+            <TimelineRow
               key={event.id}
               event={event}
+              index={index}
               isSelected={selectedId === event.id}
               onSelect={() => handleSelect(event.id)}
               reduced={reduced}
