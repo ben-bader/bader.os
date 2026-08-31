@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useInView } from '@/hooks/useInView'
 import { education, internships, projectSystems } from '@/lib/content'
 
@@ -27,7 +27,7 @@ interface TimelineEvent {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TIMELINE DATA
+   TIMELINE DATA  (chronological)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const TIMELINE: TimelineEvent[] = [
@@ -199,47 +199,31 @@ const TIMELINE: TimelineEvent[] = [
 ]
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   DETERMINISTIC LAYOUT CONFIG
-   No Math.random(). All values fixed by index.
+   DETERMINISTIC ROW SPACING
+   Only bottom margin varies — no horizontal offsets.
+   Horizontal offsets break connector alignment.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-interface EventLayout {
-  side: 'left' | 'right'
-  cardOffsetX: number   // px shift applied to card for organic feel
-  marginBottom: number  // px
-}
+const ROW_MARGINS = [72, 80, 68, 84, 76, 88, 64, 80, 72, 60]
 
-const EVENT_LAYOUTS: EventLayout[] = [
-  { side: 'left',  cardOffsetX: -18, marginBottom: 72  },
-  { side: 'right', cardOffsetX:  24, marginBottom: 88  },
-  { side: 'left',  cardOffsetX: -8,  marginBottom: 66  },
-  { side: 'right', cardOffsetX:  14, marginBottom: 84  },
-  { side: 'left',  cardOffsetX: -28, marginBottom: 70  },
-  { side: 'right', cardOffsetX:  20, marginBottom: 90  },
-  { side: 'left',  cardOffsetX: -12, marginBottom: 64  },
-  { side: 'right', cardOffsetX:  30, marginBottom: 80  },
-  { side: 'left',  cardOffsetX: -20, marginBottom: 68  },
-  { side: 'right', cardOffsetX:  16, marginBottom: 56  },
-]
-
-function getLayout(index: number): EventLayout {
-  return EVENT_LAYOUTS[index % EVENT_LAYOUTS.length]
+function rowMargin(index: number): number {
+  return ROW_MARGINS[index % ROW_MARGINS.length]
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   CONSTANTS
+   HELPERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const MONO = "'SF Mono','Fira Code',monospace"
 
-function getStatusLabel(status: 'current' | 'completed' | 'active'): string {
+function statusLabel(status: 'current' | 'completed' | 'active'): string {
   if (status === 'current') return '● CURRENT'
   if (status === 'active')  return '● ACTIVE'
   return ''
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   HEADER
+   SECTION HEADER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function TimelineHeader() {
@@ -278,7 +262,9 @@ function TimelineHeader() {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TIMELINE CARD (collapsed summary)
+   TIMELINE CARD
+   Border: all four sides use the same longhand
+   properties — no shorthand mixing, no React warnings.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function TimelineCard({
@@ -292,37 +278,41 @@ function TimelineCard({
   onSelect: () => void
   reduced: boolean
 }>) {
+  const borderColor = isSelected
+    ? 'rgba(255,255,255,0.18)'
+    : 'rgba(255,255,255,0.07)'
+
   return (
     <button
       type="button"
       aria-pressed={isSelected}
       onClick={onSelect}
+      data-hover="true"
       style={{
         display: 'block',
         width: '100%',
         textAlign: 'left',
+        /* Four-sided uniform border — never mix with border shorthand */
         borderTopWidth: '1px',
         borderTopStyle: 'solid',
-        borderTopColor: isSelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
+        borderTopColor: borderColor,
         borderRightWidth: '1px',
         borderRightStyle: 'solid',
-        borderRightColor: isSelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
+        borderRightColor: borderColor,
         borderBottomWidth: '1px',
         borderBottomStyle: 'solid',
-        borderBottomColor: isSelected ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
-        borderLeftWidth: '2px',
+        borderBottomColor: borderColor,
+        borderLeftWidth: '1px',
         borderLeftStyle: 'solid',
-        borderLeftColor: isSelected ? event.color : `${event.color}55`,
+        borderLeftColor: borderColor,
         background: isSelected ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.01)',
         borderRadius: '10px',
         padding: '16px 18px',
         cursor: 'pointer',
         color: 'var(--text-0)',
-        transition: reduced ? 'none' : 'all 0.3s ease',
-        transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: isSelected
-          ? `0 8px 24px rgba(0,0,0,0.18), 0 0 0 1px ${event.color}22`
-          : 'none',
+        transition: reduced ? 'none' : 'border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease',
+        transform: isSelected ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: isSelected ? '0 6px 20px rgba(0,0,0,0.2)' : 'none',
       }}
     >
       {/* Category pill */}
@@ -355,7 +345,7 @@ function TimelineCard({
         {event.categoryLabel}
       </div>
 
-      {/* Date + status row */}
+      {/* Date + status */}
       <div
         style={{
           display: 'flex',
@@ -371,9 +361,9 @@ function TimelineCard({
         }}
       >
         <span>{event.displayDate}</span>
-        {getStatusLabel(event.status) && (
+        {statusLabel(event.status) && (
           <span style={{ color: event.status === 'current' ? 'var(--pulse)' : 'var(--active)' }}>
-            {getStatusLabel(event.status)}
+            {statusLabel(event.status)}
           </span>
         )}
       </div>
@@ -381,19 +371,18 @@ function TimelineCard({
       {/* Title */}
       <h3
         style={{
-          margin: 0,
+          margin: '0 0 6px',
           fontFamily: MONO,
           fontSize: '0.98rem',
           lineHeight: 1.3,
           color: 'var(--text-0)',
           fontWeight: 400,
-          marginBottom: '6px',
         }}
       >
         {event.title}
       </h3>
 
-      {/* Organization */}
+      {/* Org / role */}
       {(event.role || event.organization) && (
         <div
           style={{
@@ -406,7 +395,7 @@ function TimelineCard({
             lineHeight: 1.6,
           }}
         >
-          {event.role && <div>{event.role}</div>}
+          {event.role         && <div>{event.role}</div>}
           {event.organization && <div>{event.organization}</div>}
         </div>
       )}
@@ -426,9 +415,9 @@ function TimelineCard({
           : event.description}
       </p>
 
-      {/* Stack tags (up to 3) */}
+      {/* Stack tags */}
       {event.stack.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '5px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '5px', marginBottom: '12px' }}>
           {event.stack.slice(0, 3).map(tech => (
             <span
               key={tech}
@@ -460,7 +449,7 @@ function TimelineCard({
         </div>
       )}
 
-      {/* View details CTA */}
+      {/* CTA */}
       <span
         style={{
           display: 'inline-flex',
@@ -470,11 +459,13 @@ function TimelineCard({
           fontSize: '0.52rem',
           letterSpacing: '1.8px',
           textTransform: 'uppercase' as const,
-          color: isSelected ? event.color : 'var(--pulse)',
-          transition: reduced ? 'none' : 'color 0.25s ease',
+          color: 'var(--pulse)',
+          transition: reduced ? 'none' : 'opacity 0.2s ease',
+          opacity: isSelected ? 0.6 : 1,
         }}
       >
-        {isSelected ? 'Collapse' : 'View details'} <span aria-hidden="true">→</span>
+        {isSelected ? 'Collapse' : 'View details'}{' '}
+        <span aria-hidden="true">→</span>
       </span>
     </button>
   )
@@ -487,10 +478,7 @@ function TimelineCard({
 function DetailsPanel({
   event,
   reduced,
-}: Readonly<{
-  event: TimelineEvent
-  reduced: boolean
-}>) {
+}: Readonly<{ event: TimelineEvent; reduced: boolean }>) {
   return (
     <aside
       aria-live="polite"
@@ -509,16 +497,16 @@ function DetailsPanel({
         borderLeftWidth: '1px',
         borderLeftStyle: 'solid',
         borderLeftColor: 'rgba(255,255,255,0.08)',
-        background: 'rgba(8, 8, 18, 0.88)',
-        borderRadius: '12px',
-        padding: '18px 18px 16px',
-        animation: reduced ? 'none' : 'detailsReveal 0.35s ease forwards',
+        background: 'rgba(8,8,18,0.88)',
+        borderRadius: '10px',
+        padding: '18px',
+        animation: reduced ? 'none' : 'tlDetailsIn 0.3s ease forwards',
       }}
     >
       {/* Category + date */}
       <div
         style={{
-          marginBottom: '12px',
+          marginBottom: '10px',
           fontFamily: MONO,
           fontSize: '0.54rem',
           letterSpacing: '2px',
@@ -534,7 +522,7 @@ function DetailsPanel({
         style={{
           margin: '0 0 8px',
           fontFamily: MONO,
-          fontSize: 'clamp(1rem, 2vw, 1.35rem)',
+          fontSize: 'clamp(1rem, 2vw, 1.3rem)',
           lineHeight: 1.25,
           color: 'var(--text-0)',
           fontWeight: 400,
@@ -563,8 +551,7 @@ function DetailsPanel({
         </div>
       )}
 
-      {/* Divider */}
-      <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', marginBottom: '12px' }} />
+      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', marginBottom: '12px' }} />
 
       {/* Description */}
       <p
@@ -673,7 +660,7 @@ function DetailsPanel({
         </div>
       )}
 
-      {/* GitHub link */}
+      {/* GitHub */}
       {event.github && (
         <a
           href={event.github}
@@ -699,7 +686,18 @@ function DetailsPanel({
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TIMELINE ROW — alternating left / right
+   TIMELINE ROW
+
+   Layout: 3-column CSS grid
+     [card slot — ~45%] [center — 48px] [card slot — ~45%]
+
+   The vertical timeline runs through the exact center
+   of the middle column.  The connector SVG spans
+   from the card edge to the marker.  No translateX
+   offsets on cards — that breaks connector alignment.
+
+   Even index  → card in LEFT  slot, right slot empty
+   Odd  index  → card in RIGHT slot, left  slot empty
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function TimelineRow({
@@ -715,41 +713,54 @@ function TimelineRow({
   onSelect: () => void
   reduced: boolean
 }>) {
-  const layout = getLayout(index)
-  const isLeft = layout.side === 'left'
+  const isLeft = index % 2 === 0
 
   const { ref: rowRef, inView } = useInView<HTMLDivElement>({
-    threshold: 0.12,
+    threshold: 0.1,
     once: true,
   })
 
-  // Connector animation: draws from card edge toward the central dot
-  // left side: connector extends rightward from card to center dot
-  // right side: connector extends leftward from card to center dot
+  const cardAnim: React.CSSProperties = reduced
+    ? {}
+    : {
+        opacity: inView ? 1 : 0,
+        transform: inView
+          ? 'translateY(0)'
+          : `translateY(12px)`,
+        transition: 'opacity 0.4s ease 0.25s, transform 0.4s var(--ease-sys) 0.25s',
+      }
+
+  const markerAnim: React.CSSProperties = reduced
+    ? {}
+    : {
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'scale(1)' : 'scale(0.3)',
+        transition: 'opacity 0.3s ease 0.1s, transform 0.3s var(--ease-sys) 0.1s',
+      }
+
+  /* Connector: horizontal SVG line bridging the gap between
+     the card edge and the marker dot centre.
+     We size it to exactly fill the gap between the card
+     boundary and the marker (half of the 48px centre column). */
+  const connectorAnim: React.CSSProperties = reduced
+    ? {}
+    : {
+        opacity: inView ? 1 : 0,
+        transition: 'opacity 0.3s ease 0.15s',
+      }
 
   return (
     <div
       ref={rowRef}
-      style={{ marginBottom: `${layout.marginBottom}px`, position: 'relative' }}
-      data-timeline-row
+      style={{ marginBottom: `${rowMargin(index)}px` }}
     >
-      {/* ── DESKTOP: grid layout ── */}
+      {/* ── DESKTOP 3-column grid ── */}
       <div className="tl-row-desktop">
-        {/* Left slot */}
-        <div className="tl-slot tl-slot-left">
-          {isLeft && (
-            <div
-              className="tl-card-wrap tl-card-left"
-              style={{
-                transform: inView
-                  ? `translateX(${layout.cardOffsetX}px)`
-                  : `translateX(${layout.cardOffsetX - 24}px)`,
-                opacity: inView ? 1 : 0,
-                transition: reduced
-                  ? 'none'
-                  : `opacity 0.45s ease 0.3s, transform 0.45s var(--ease-sys) 0.3s`,
-              }}
-            >
+
+        {/* LEFT card slot */}
+        <div className="tl-slot-left">
+          {isLeft ? (
+            <div className="tl-card-wrap" style={cardAnim}>
               <TimelineCard
                 event={event}
                 isSelected={isSelected}
@@ -757,72 +768,43 @@ function TimelineRow({
                 reduced={reduced}
               />
               {isSelected && (
-                <div className="tl-details-inline" style={{ marginTop: '14px' }}>
+                <div style={{ marginTop: '12px' }}>
                   <DetailsPanel event={event} reduced={reduced} />
                 </div>
               )}
             </div>
-          )}
+          ) : null}
         </div>
 
-        {/* Center column: connector + marker */}
-        <div className="tl-center">
-          {/* Connector line */}
-          <svg
-            className={`tl-connector tl-connector-${isLeft ? 'left' : 'right'}`}
+        {/* CENTER: connector + marker */}
+        <div className="tl-center-col">
+          {/* Connector line — spans from card edge to marker */}
+          <div
+            className={isLeft ? 'tl-connector-left' : 'tl-connector-right'}
+            style={connectorAnim}
             aria-hidden="true"
-            style={{
-              opacity: inView ? 1 : 0,
-              transition: reduced ? 'none' : `opacity 0.3s ease ${0.15}s`,
-            }}
-          >
-            <line
-              x1={isLeft ? '100%' : '0%'}
-              y1="50%"
-              x2={isLeft ? '0%' : '100%'}
-              y2="50%"
-              stroke="rgba(255,255,255,0.12)"
-              strokeWidth="1"
-              className={inView && !reduced ? 'tl-connector-line-animate' : ''}
-              style={{
-                strokeDasharray: '100%',
-                strokeDashoffset: inView && !reduced ? '0' : '100%',
-                transition: reduced ? 'none' : `stroke-dashoffset 0.55s var(--ease-sys) ${0.2}s`,
-              }}
-            />
-          </svg>
-
+          />
           {/* Marker dot */}
           <div
-            className={`tl-marker ${isSelected ? 'tl-marker-active' : ''}`}
+            className="tl-marker"
             style={{
-              background: isSelected ? event.color : 'rgba(255,255,255,0.18)',
-              boxShadow: isSelected ? `0 0 10px ${event.color}88` : 'none',
-              opacity: inView ? 1 : 0,
-              transform: inView ? 'scale(1)' : 'scale(0.4)',
-              transition: reduced
-                ? 'none'
-                : `opacity 0.3s ease ${0.1}s, transform 0.35s var(--ease-sys) ${0.1}s, background 0.25s ease, box-shadow 0.25s ease`,
+              ...markerAnim,
+              background: isSelected ? event.color : 'rgba(255,255,255,0.2)',
+              /* Fixed size — never change width/height on selected to avoid
+                 layout shift that misaligns the connector */
+              width: '8px',
+              height: '8px',
+              transition: (reduced ? '' : 'opacity 0.3s ease 0.1s, transform 0.3s var(--ease-sys) 0.1s, ') +
+                'background 0.25s ease',
             }}
             aria-hidden="true"
           />
         </div>
 
-        {/* Right slot */}
-        <div className="tl-slot tl-slot-right">
-          {!isLeft && (
-            <div
-              className="tl-card-wrap tl-card-right"
-              style={{
-                transform: inView
-                  ? `translateX(${layout.cardOffsetX}px)`
-                  : `translateX(${layout.cardOffsetX + 24}px)`,
-                opacity: inView ? 1 : 0,
-                transition: reduced
-                  ? 'none'
-                  : `opacity 0.45s ease 0.3s, transform 0.45s var(--ease-sys) 0.3s`,
-              }}
-            >
+        {/* RIGHT card slot */}
+        <div className="tl-slot-right">
+          {!isLeft ? (
+            <div className="tl-card-wrap" style={cardAnim}>
               <TimelineCard
                 event={event}
                 isSelected={isSelected}
@@ -830,37 +812,40 @@ function TimelineRow({
                 reduced={reduced}
               />
               {isSelected && (
-                <div className="tl-details-inline" style={{ marginTop: '14px' }}>
+                <div style={{ marginTop: '12px' }}>
                   <DetailsPanel event={event} reduced={reduced} />
                 </div>
               )}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {/* ── MOBILE: single column ── */}
+      {/* ── MOBILE single-column ── */}
       <div className="tl-row-mobile">
-        {/* Marker + connector row */}
-        <div className="tl-mobile-marker-row">
+        {/* Left strip: marker */}
+        <div className="tl-mobile-strip" aria-hidden="true">
           <div
-            className={`tl-marker ${isSelected ? 'tl-marker-active' : ''}`}
+            className="tl-marker"
             style={{
-              background: isSelected ? event.color : 'rgba(255,255,255,0.18)',
-              boxShadow: isSelected ? `0 0 10px ${event.color}88` : 'none',
-              transition: reduced ? 'none' : 'background 0.25s ease, box-shadow 0.25s ease',
+              background: isSelected ? event.color : 'rgba(255,255,255,0.2)',
+              width: '8px',
+              height: '8px',
+              transition: 'background 0.25s ease',
             }}
-            aria-hidden="true"
           />
         </div>
-
         {/* Card */}
         <div
-          style={{
-            opacity: inView ? 1 : 0,
-            transform: inView ? 'translateY(0)' : 'translateY(16px)',
-            transition: reduced ? 'none' : 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
-          }}
+          style={
+            reduced
+              ? {}
+              : {
+                  opacity: inView ? 1 : 0,
+                  transform: inView ? 'translateY(0)' : 'translateY(10px)',
+                  transition: 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
+                }
+          }
         >
           <TimelineCard
             event={event}
@@ -880,18 +865,18 @@ function TimelineRow({
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   VERTICAL TIMELINE LINE (SVG, draws on mount)
+   VERTICAL SPINE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function TimelineLine({ reduced }: Readonly<{ reduced: boolean }>) {
-  const { ref, inView } = useInView<HTMLDivElement>({ threshold: 0.04, once: true })
+function TimelineSpine({ reduced }: Readonly<{ reduced: boolean }>) {
+  const { ref, inView } = useInView<HTMLDivElement>({ threshold: 0.02, once: true })
   return (
-    <div ref={ref} className="tl-line-wrap" aria-hidden="true">
+    <div ref={ref} className="tl-spine-wrap" aria-hidden="true">
       <div
-        className="tl-line"
+        className="tl-spine"
         style={{
           transform: inView ? 'scaleY(1)' : 'scaleY(0)',
-          transition: reduced ? 'none' : 'transform 0.7s var(--ease-sys)',
+          transition: reduced ? 'none' : 'transform 0.8s var(--ease-sys)',
         }}
       />
     </div>
@@ -899,19 +884,19 @@ function TimelineLine({ reduced }: Readonly<{ reduced: boolean }>) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ROOT EXPORT
+   ROOT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 export default function LayerMemory() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [reduced, setReduced] = useState<boolean>(false)
+  const [reduced, setReduced] = useState(false)
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const handler = (e: MediaQueryListEvent | MediaQueryList) => setReduced(e.matches)
-    handler(media)
-    media.addEventListener('change', handler)
-    return () => media.removeEventListener('change', handler)
+    handler(mq)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [])
 
   const handleSelect = useCallback((id: string) => {
@@ -925,113 +910,121 @@ export default function LayerMemory() {
       aria-label="Layer 02: Memory"
       style={{ background: 'var(--void)' }}
     >
-      {/* ── Scoped styles ── */}
       <style>{`
-        /* ── Timeline container ── */
+        /* ─── Outer container ─── */
         .tl-outer {
           position: relative;
-          max-width: 1100px;
+          max-width: 1040px;
           margin-inline: auto;
         }
 
-        /* ── Desktop row: 3-column grid ── */
+        /* ─── Desktop row
+             3-column:  [left card — 1fr]  [center — 48px]  [right card — 1fr]
+             The centre column is exactly 48px.  The vertical spine is centred
+             within it.  Connectors span exactly half of it (24px each side).
+        ─── */
         .tl-row-desktop {
           display: grid;
-          grid-template-columns: 1fr 56px 1fr;
-          align-items: center;
-          gap: 0;
+          grid-template-columns: 1fr 48px 1fr;
+          align-items: start;
         }
-        .tl-row-mobile {
-          display: none;
-        }
+        .tl-row-mobile { display: none; }
 
-        /* Card slot constraints */
-        .tl-slot {
-          display: flex;
-          min-width: 0;
-        }
-        .tl-slot-left  { justify-content: flex-end;  padding-right: 0; }
-        .tl-slot-right { justify-content: flex-start; padding-left: 0; }
+        /* Card slots — card stays grid-flush, no translateX */
+        .tl-slot-left  { display: flex; justify-content: flex-end;  padding-right: 16px; }
+        .tl-slot-right { display: flex; justify-content: flex-start; padding-left: 16px; }
+        .tl-card-wrap  { width: 100%; max-width: 480px; }
 
-        .tl-card-wrap {
-          width: 100%;
-          max-width: 520px;
-        }
-        .tl-card-left  { margin-right: 0; }
-        .tl-card-right { margin-left: 0;  }
-
-        /* Hover nudge — slight outward nudge; override handled per-card via JS transform */
-        .tl-card-left:hover  { filter: brightness(1.04); }
-        .tl-card-right:hover { filter: brightness(1.04); }
-
-        /* ── Center column ── */
-        .tl-center {
+        /* ─── Centre column ─── */
+        .tl-center-col {
           position: relative;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          height: 100%;
-          z-index: 2;
+          /* Push marker to vertically align with the card's top region */
+          padding-top: 20px;
         }
 
-        /* ── Connector SVG ── */
-        .tl-connector {
+        /* ─── Horizontal connector lines ─── */
+        /*
+          Each connector is a 1px tall div.
+          Width = 24px = half of the 48px centre column.
+          It sits absolutely in the centre column, stretching
+          from the column edge to the marker centre.
+        */
+        .tl-connector-left,
+        .tl-connector-right {
           position: absolute;
-          top: 50%;
+          top: 24px;          /* aligns with padding-top of centre col */
           height: 1px;
-          width: 56px;
-          overflow: visible;
+          width: 24px;
+          background: rgba(255,255,255,0.1);
           pointer-events: none;
         }
-        .tl-connector-left  { right: 50%; transform: translateY(-50%); }
-        .tl-connector-right { left: 50%;  transform: translateY(-50%); }
+        .tl-connector-left  { right: 50%; }   /* extends leftward  toward card */
+        .tl-connector-right { left:  50%; }   /* extends rightward toward card */
 
-        /* ── Marker dot ── */
+        /* ─── Marker dot ─── */
         .tl-marker {
           position: relative;
           z-index: 3;
-          width: 8px;
-          height: 8px;
           border-radius: 50%;
           flex-shrink: 0;
         }
-        .tl-marker-active {
-          width: 11px;
-          height: 11px;
-        }
 
-        /* ── Vertical timeline line ── */
-        .tl-line-wrap {
+        /* ─── Vertical spine ─── */
+        .tl-spine-wrap {
           position: absolute;
-          top: 0;
-          bottom: 0;
+          top: 0; bottom: 0;
+          /* Centre it on the 48px centre column.
+             The centre column starts at 50% - 24px of the outer container,
+             so we place the spine at exactly 50% of the outer. */
           left: 50%;
           transform: translateX(-50%);
           width: 1px;
           z-index: 1;
           pointer-events: none;
         }
-        .tl-line {
+        .tl-spine {
           width: 100%;
           height: 100%;
           background: linear-gradient(
             to bottom,
             transparent 0%,
-            rgba(255,255,255,0.08) 6%,
-            rgba(255,255,255,0.08) 94%,
+            rgba(255,255,255,0.07) 4%,
+            rgba(255,255,255,0.07) 96%,
             transparent 100%
           );
           transform-origin: top center;
         }
 
-        /* ── Details inline (desktop) ── */
-        .tl-details-inline {
-          width: 100%;
+        /* ─── Focus rings ─── */
+        .tl-card-wrap button:focus-visible,
+        .tl-row-mobile button:focus-visible {
+          outline: 1px solid var(--pulse);
+          outline-offset: 2px;
+          border-radius: 10px;
+        }
+        .tl-card-wrap a:focus-visible {
+          outline: 1px solid var(--pulse);
+          outline-offset: 2px;
         }
 
-        /* ── Mobile layout ── */
-        @media (max-width: 767px) {
+        /* ─── Details entrance ─── */
+        @keyframes tlDetailsIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+
+        /* ─── Tablet ─── */
+        @media (min-width: 640px) and (max-width: 900px) {
+          .tl-card-wrap { max-width: 360px; }
+          .tl-slot-left  { padding-right: 10px; }
+          .tl-slot-right { padding-left:  10px; }
+        }
+
+        /* ─── Mobile ─── */
+        @media (max-width: 639px) {
           .tl-row-desktop { display: none; }
           .tl-row-mobile {
             display: grid;
@@ -1039,13 +1032,13 @@ export default function LayerMemory() {
             gap: 0 12px;
             align-items: start;
           }
-          .tl-mobile-marker-row {
+          .tl-mobile-strip {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 18px;
+            padding-top: 20px;
           }
-          /* Mobile vertical line through center of marker column */
+          /* Mobile spine: left edge of the 32px strip column */
           .tl-outer::before {
             content: '';
             position: absolute;
@@ -1055,41 +1048,23 @@ export default function LayerMemory() {
             background: rgba(255,255,255,0.06);
             pointer-events: none;
           }
-          .tl-line-wrap { display: none; }
+          .tl-spine-wrap { display: none; }
         }
 
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .tl-card-wrap { max-width: 420px; }
-        }
-
-        /* ── Detail panel entrance ── */
-        @keyframes detailsReveal {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ── Focus rings ── */
-        .tl-row-desktop button:focus-visible,
-        .tl-row-mobile  button:focus-visible,
-        .tl-details-inline a:focus-visible {
-          outline: 2px solid var(--pulse);
-          outline-offset: 3px;
-        }
-
-        /* ── Reduced motion override ── */
+        /* ─── Reduced motion ─── */
         @media (prefers-reduced-motion: reduce) {
-          .tl-line,
+          .tl-spine,
           .tl-marker,
-          .tl-connector,
+          .tl-connector-left,
+          .tl-connector-right,
           .tl-card-wrap,
           .tl-row-mobile > div {
             animation: none !important;
-            transition: none !important;
+            transition: background 0.01ms !important;
             opacity: 1 !important;
             transform: none !important;
-            translate: none !important;
           }
-          @keyframes detailsReveal {
+          @keyframes tlDetailsIn {
             from { opacity: 1; transform: none; }
             to   { opacity: 1; transform: none; }
           }
@@ -1100,10 +1075,8 @@ export default function LayerMemory() {
 
       <div className="os-container" style={{ paddingBottom: 'var(--sp-7)' }}>
         <div className="tl-outer">
-          {/* Vertical center line */}
-          <TimelineLine reduced={reduced} />
+          <TimelineSpine reduced={reduced} />
 
-          {/* Events */}
           {TIMELINE.map((event, index) => (
             <TimelineRow
               key={event.id}

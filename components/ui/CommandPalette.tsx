@@ -2,157 +2,441 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { LAYERS } from '@/system/layers'
-import { projectSystems, identity } from '@/lib/content'
+import { identity } from '@/lib/content'
 import { scrollToId } from '@/lib/lenis'
 
-interface Cmd { id: string; label: string; desc?: string; action: () => void }
+interface Cmd {
+  id: string
+  label: string
+  desc: string
+  action: () => void
+}
 
-// Use lenis-aware scrollToId everywhere
-function navTo(anchor: string) { scrollToId(anchor, 0) }
+const MONO = 'var(--font-mono)'
+
+const LAYER_DESCS: Record<string, string> = {
+  core:         'Identity, stack overview, availability',
+  memory:       'Education, internships, project timeline',
+  knowledge:    'Technology graph and skill connections',
+  systems:      'Engineered projects and architecture',
+  process:      'Engineering workflow and methodology',
+  intelligence: 'Metrics, capabilities, and impact',
+  legacy:       'Contact and final transmission',
+}
 
 export default function CommandPalette() {
   const [open,   setOpen]   = useState(false)
   const [query,  setQuery]  = useState('')
   const [cursor, setCursor] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const listRef  = useRef<HTMLDivElement>(null)
 
   const ALL: Cmd[] = [
     ...LAYERS.map(l => ({
       id:     l.id,
-      label:  `→ ${l.codename}`,
-      desc:   `Navigate to layer ${String(l.index).padStart(2, '0')}`,
-      action: () => navTo(l.anchor),
+      label:  `${String(l.index).padStart(2, '0')}  ${l.codename}`,
+      desc:   LAYER_DESCS[l.id] ?? '',
+      action: () => scrollToId(l.anchor, 0),
     })),
-    ...projectSystems.map(s => ({
-      id:     `sys-${s.id}`,
-      label:  s.name,
-      desc:   s.subtitle,
-      action: () => navTo('layer-systems'),
-    })),
-    { id: 'email',  label: 'Send email ↗',  desc: identity.email,  action: () => window.open(`mailto:${identity.email}`) },
-    { id: 'github', label: 'GitHub ↗',      desc: identity.github, action: () => window.open(identity.github, '_blank') },
-    { id: 'resume', label: 'Download résumé', desc: 'PDF resume', action: () => window.open(identity.resume, '_blank') },
-    { id: 'top',    label: '↑ Back to top',  desc: 'Return to Layer 01', action: () => navTo('layer-core') },
+    {
+      id:     'github',
+      label:  'GitHub',
+      desc:   identity.github.replace('https://', ''),
+      action: () => window.open(identity.github, '_blank'),
+    },
+    {
+      id:     'email',
+      label:  'Send email',
+      desc:   identity.email,
+      action: () => window.open(`mailto:${identity.email}`),
+    },
+    {
+      id:     'resume',
+      label:  'Download résumé',
+      desc:   'PDF · opens in new tab',
+      action: () => window.open(identity.resume, '_blank'),
+    },
+    {
+      id:     'top',
+      label:  'Back to top',
+      desc:   'Return to Layer 01 — CORE',
+      action: () => scrollToId('layer-core', 0),
+    },
   ]
 
-  const filtered = ALL.filter(c => {
-    const q = query.toLowerCase()
-    return !q || c.label.toLowerCase().includes(q) || c.desc?.toLowerCase().includes(q)
+  const filtered = ALL.filter(cmd => {
+    const q = query.toLowerCase().trim()
+    return !q || cmd.label.toLowerCase().includes(q) || cmd.desc.toLowerCase().includes(q)
   })
 
-  const close = useCallback(() => { setOpen(false); setQuery(''); setCursor(0) }, [])
+  const close = useCallback(() => {
+    setOpen(false)
+    setQuery('')
+    setCursor(0)
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen(v => !v) }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setOpen(v => !v)
+      }
       if (e.key === 'Escape') close()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [close])
 
-  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 40) }, [open])
+  useEffect(() => {
+    if (!open) return
+    const t = window.setTimeout(() => inputRef.current?.focus(), 50)
+    return () => window.clearTimeout(t)
+  }, [open])
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); setCursor(c => Math.min(c + 1, filtered.length - 1)) }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); setCursor(c => Math.max(c - 1, 0)) }
-    if (e.key === 'Enter' && filtered[cursor]) { filtered[cursor].action(); close() }
+  useEffect(() => {
+    if (cursor >= filtered.length) setCursor(Math.max(filtered.length - 1, 0))
+  }, [filtered.length, cursor])
+
+  useEffect(() => {
+    if (!listRef.current) return
+    const el = listRef.current.querySelector('[data-active="true"]') as HTMLElement | null
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [cursor])
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setCursor(c => Math.min(c + 1, Math.max(filtered.length - 1, 0)))
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setCursor(c => Math.max(c - 1, 0))
+    }
+    if (e.key === 'Enter' && filtered[cursor]) {
+      filtered[cursor].action()
+      close()
+    }
   }
 
-  if (!open) return (
-    <button
-      onClick={() => setOpen(true)}
-      className="fixed bottom-6 right-6 z-[200] flex items-center gap-2 rounded-sm"
-      style={{
-        padding:      '7px 12px',
-        background:   'rgba(5,5,10,0.9)',
-        border:       '1px solid var(--wire-bright)',
-        backdropFilter: 'blur(16px)',
-        color:        'var(--text-2)',
-        fontFamily:   'var(--font-mono)',
-        fontSize:     '0.6rem',
-        letterSpacing:'0.12em',
-      }}
-      aria-label="Open command palette — Ctrl+K"
-      data-hover="true"
-    >
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-      ⌘K
-    </button>
-  )
+  /* ── Trigger button ── */
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Open command palette — Ctrl+K"
+        data-hover="true"
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 200,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          background: 'rgba(5,5,10,0.92)',
+          backdropFilter: 'blur(12px)',
+          borderTopWidth: '1px',
+          borderTopStyle: 'solid',
+          borderTopColor: 'var(--wire-bright)',
+          borderRightWidth: '1px',
+          borderRightStyle: 'solid',
+          borderRightColor: 'var(--wire-bright)',
+          borderBottomWidth: '1px',
+          borderBottomStyle: 'solid',
+          borderBottomColor: 'var(--wire-bright)',
+          borderLeftWidth: '1px',
+          borderLeftStyle: 'solid',
+          borderLeftColor: 'var(--wire-bright)',
+          color: 'var(--text-2)',
+          fontFamily: MONO,
+          fontSize: '0.6rem',
+          letterSpacing: '0.14em',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          cursor: 'pointer',
+        }}
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        <span>⌘K</span>
+      </button>
+    )
+  }
 
+  /* ── Panel ── */
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-start justify-center"
-      style={{ paddingTop: 'clamp(80px,14vh,140px)', paddingLeft: '16px', paddingRight: '16px' }}
-      role="dialog" aria-modal="true" aria-label="Command palette"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 300,
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        padding: '0 16px',
+        paddingTop: 'clamp(80px, 12vh, 140px)',
+      }}
     >
+      {/* Backdrop */}
       <div
-        className="absolute inset-0"
-        style={{ background: 'rgba(2,2,4,0.85)', backdropFilter: 'blur(20px)' }}
-        onClick={close}
         aria-hidden="true"
+        onClick={close}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(2,2,4,0.75)',
+          backdropFilter: 'blur(12px)',
+        }}
       />
 
+      {/* Panel */}
       <div
-        className="relative w-full max-w-[560px] rounded-sm"
-        style={{ background: 'var(--surface-2)', border: '1px solid var(--wire-bright)', boxShadow: '0 40px 80px rgba(0,0,0,0.8)' }}
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '580px',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          background: 'var(--surface-2)',
+          borderTopWidth: '1px',
+          borderTopStyle: 'solid',
+          borderTopColor: 'var(--wire-bright)',
+          borderRightWidth: '1px',
+          borderRightStyle: 'solid',
+          borderRightColor: 'var(--wire)',
+          borderBottomWidth: '1px',
+          borderBottomStyle: 'solid',
+          borderBottomColor: 'var(--wire)',
+          borderLeftWidth: '1px',
+          borderLeftStyle: 'solid',
+          borderLeftColor: 'var(--wire)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
+        }}
       >
-        {/* Input */}
-        <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: '1px solid var(--wire)' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--text-2)', flexShrink: 0 }}>
+        {/* Search row */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '14px 16px',
+            borderBottomWidth: '1px',
+            borderBottomStyle: 'solid',
+            borderBottomColor: 'var(--wire)',
+          }}
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+            style={{ flexShrink: 0, color: 'var(--text-3)' }}
+          >
             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
+
           <input
             ref={inputRef}
-            type="text" value={query}
+            type="text"
+            value={query}
             onChange={e => { setQuery(e.target.value); setCursor(0) }}
             onKeyDown={onKeyDown}
-            placeholder="Navigate system…"
-            className="flex-1 bg-transparent focus:outline-none"
-            style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-0)', letterSpacing: '0.02em' }}
-            autoComplete="off" spellCheck={false}
+            placeholder="Navigate system..."
+            autoComplete="off"
+            spellCheck={false}
+            aria-label="Search"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              fontFamily: MONO,
+              fontSize: '0.8rem',
+              letterSpacing: '0.02em',
+              color: 'var(--text-0)',
+            }}
           />
-          <kbd className="t-system px-1.5 py-0.5 rounded" style={{ border: '1px solid var(--wire)' }}>ESC</kbd>
+
+          <kbd
+            aria-hidden="true"
+            style={{
+              flexShrink: 0,
+              fontFamily: MONO,
+              fontSize: '0.52rem',
+              letterSpacing: '0.06em',
+              color: 'var(--text-3)',
+              background: 'rgba(255,255,255,0.04)',
+              borderTopWidth: '1px',
+              borderTopStyle: 'solid',
+              borderTopColor: 'rgba(255,255,255,0.08)',
+              borderRightWidth: '1px',
+              borderRightStyle: 'solid',
+              borderRightColor: 'rgba(255,255,255,0.08)',
+              borderBottomWidth: '1px',
+              borderBottomStyle: 'solid',
+              borderBottomColor: 'rgba(255,255,255,0.08)',
+              borderLeftWidth: '1px',
+              borderLeftStyle: 'solid',
+              borderLeftColor: 'rgba(255,255,255,0.08)',
+              borderRadius: '4px',
+              padding: '3px 6px',
+            }}
+          >
+            ESC
+          </kbd>
         </div>
 
         {/* Results */}
-        <div style={{ maxHeight: '320px', overflowY: 'auto', overflowX: 'hidden' }}>
+        <div
+          ref={listRef}
+          role="listbox"
+          aria-label="Results"
+          style={{
+            padding: '6px',
+            maxHeight: '340px',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          }}
+        >
           {filtered.length === 0 ? (
-            <div className="px-4 py-8 text-center t-system">No results</div>
+            <div
+              style={{
+                padding: '32px 16px',
+                textAlign: 'center',
+                fontFamily: MONO,
+                fontSize: '0.65rem',
+                color: 'var(--text-3)',
+                letterSpacing: '0.06em',
+              }}
+            >
+              No results
+            </div>
           ) : (
-            filtered.map((cmd, i) => (
-              <button
-                key={cmd.id}
-                onClick={() => { cmd.action(); close() }}
-                onMouseEnter={() => setCursor(i)}
-                className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left focus:outline-none"
-                style={{
-                  background:  i === cursor ? 'rgba(99,179,237,0.08)' : 'transparent',
-                  borderLeft:  `2px solid ${i === cursor ? 'var(--pulse)' : 'transparent'}`,
-                }}
-                data-hover="true"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <span className="t-mono" style={{ color: i === cursor ? 'var(--text-0)' : 'var(--text-1)' }}>
-                    {cmd.label}
-                  </span>
-                  {cmd.desc && <span className="t-system">{cmd.desc}</span>}
-                </div>
-              </button>
-            ))
+            filtered.map((cmd, i) => {
+              const active = i === cursor
+              return (
+                <button
+                  key={cmd.id}
+                  type="button"
+                  data-active={active}
+                  data-hover="true"
+                  onClick={() => { cmd.action(); close() }}
+                  onMouseEnter={() => setCursor(i)}
+                  aria-selected={active}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '9px 12px',
+                    borderRadius: '5px',
+                    background: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    borderTopWidth: '0',
+                    borderTopStyle: 'solid',
+                    borderTopColor: 'transparent',
+                    borderRightWidth: '0',
+                    borderRightStyle: 'solid',
+                    borderRightColor: 'transparent',
+                    borderBottomWidth: '0',
+                    borderBottomStyle: 'solid',
+                    borderBottomColor: 'transparent',
+                    borderLeftWidth: '0',
+                    borderLeftStyle: 'solid',
+                    borderLeftColor: 'transparent',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'background 0.1s ease',
+                  }}
+                >
+                  <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span
+                      style={{
+                        fontFamily: MONO,
+                        fontSize: '0.72rem',
+                        lineHeight: 1.4,
+                        color: active ? 'var(--text-0)' : 'var(--text-1)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap' as const,
+                      }}
+                    >
+                      {cmd.label}
+                    </span>
+                    {cmd.desc && (
+                      <span
+                        style={{
+                          fontFamily: MONO,
+                          fontSize: '0.58rem',
+                          lineHeight: 1.4,
+                          color: 'var(--text-3)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap' as const,
+                        }}
+                      >
+                        {cmd.desc}
+                      </span>
+                    )}
+                  </div>
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        flexShrink: 0,
+                        fontFamily: MONO,
+                        fontSize: '0.6rem',
+                        color: 'var(--text-3)',
+                      }}
+                    >
+                      ↵
+                    </span>
+                  )}
+                </button>
+              )
+            })
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-5 px-4 py-2" style={{ borderTop: '1px solid var(--wire)' }}>
-          {['↑↓ navigate', '↵ select', 'esc close'].map(h => (
-            <span key={h} className="t-system">{h}</span>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '10px 16px',
+            borderTopWidth: '1px',
+            borderTopStyle: 'solid',
+            borderTopColor: 'var(--wire)',
+          }}
+        >
+          {(['↑↓ navigate', '↵ select', 'esc close'] as const).map(hint => (
+            <span
+              key={hint}
+              className="t-system"
+              style={{ whiteSpace: 'nowrap' as const }}
+            >
+              {hint}
+            </span>
           ))}
         </div>
       </div>
+
+      <style>{`
+        [role="listbox"]::-webkit-scrollbar       { width: 2px; }
+        [role="listbox"]::-webkit-scrollbar-track { background: transparent; }
+        [role="listbox"]::-webkit-scrollbar-thumb { background: var(--wire-bright); border-radius: 2px; }
+        [role="listbox"] button:focus-visible      { outline: 1px solid var(--pulse); outline-offset: -1px; }
+      `}</style>
     </div>
   )
 }
