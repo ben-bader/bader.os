@@ -61,7 +61,7 @@ export default function LayerKnowledge() {
       id="layer-knowledge"
       ref={sectionRef}
       className="os-section"
-      aria-label="Layer 03: Knowledge"
+      aria-label="Layer 03: Technology Stack"
     >
       {/* Grid bg */}
       <div className="absolute inset-0 sys-grid pointer-events-none" style={{ opacity: 0.25 }} aria-hidden="true" />
@@ -81,21 +81,20 @@ export default function LayerKnowledge() {
       <div className="os-container relative z-10">
         {/* Header */}
         <div className="kn-reveal layer-header">
-          <span className="t-system" style={{ color: 'var(--pulse)' }}>L03 / KNOWLEDGE</span>
+          <span className="t-system" style={{ color: 'var(--pulse)' }}>L03 / STACK</span>
           <div className="wire-h" style={{ width: '48px' }} />
-          <span className="t-system">{total} NODES · {cats.length} CATEGORIES</span>
+          <span className="t-system">{total} TECHNOLOGIES · {cats.length} CATEGORIES</span>
         </div>
 
         <h2 className="kn-reveal t-heading layer-title">
-          The technology<br />
-          <span style={{ color: 'var(--text-2)' }}>map.</span>
+          Technology<br />
+          <span style={{ color: 'var(--text-2)' }}>stack.</span>
         </h2>
 
         <p className="kn-reveal layer-desc">
-          Every technology anchored in place by real usage. Hover any node
-          to illuminate its connections — edges draw themselves, unrelated
-          technologies fade. The structure never changes. Only what matters
-          to you becomes visible.
+          Every technology placed by real usage. Hover any node to illuminate
+          its connections — edges draw from co-usage in actual projects,
+          unrelated technologies fade. Click a node to see which projects used it.
         </p>
 
         {/* Tech Map — stable positions, hover-activated connections */}

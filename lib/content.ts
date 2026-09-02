@@ -500,12 +500,12 @@ export const processSteps = [
 
 /* ─── Intelligence metrics — computed from real project data ─────────── */
 export const intelligenceMetrics = [
-  { id: 'projects',      label: 'Projects completed',       value: 4,  suffix: '',  detail: 'AtlasHR, Innovex, Homely, ONEE-SYS' },
+  { id: 'projects',      label: 'Projects shipped',         value: 4,  suffix: '',  detail: 'AtlasHR, Innovex, Homely, ONEE-SYS' },
   { id: 'internships',   label: 'Internships',              value: 2,  suffix: '',  detail: 'ONEE (2025), 2SIS Technologies (2026)' },
   { id: 'languages',     label: 'Programming languages',    value: 7,  suffix: '',  detail: 'JS, TS, Java, PHP, SQL, C, Python' },
-  { id: 'frameworks',    label: 'Frameworks mastered',      value: 4,  suffix: '',  detail: 'React, Next.js, Spring Boot, Laravel' },
+  { id: 'frameworks',    label: 'Core frameworks',          value: 4,  suffix: '',  detail: 'React, Next.js, Spring Boot, Laravel' },
   { id: 'databases',     label: 'Databases used',           value: 5,  suffix: '',  detail: 'PostgreSQL, MySQL, SQLite, MongoDB, Oracle' },
-  { id: 'microservices', label: 'Microservices built',      value: 4,  suffix: '+', detail: 'Gateway, Auth, Employee, Queue — AtlasHR' },
+  { id: 'microservices', label: 'Microservices — AtlasHR',  value: 4,  suffix: '+', detail: 'Gateway, Auth, Employee, Queue' },
 ]
 
 /* ─── System stats for Layer 01 ─────────────────────────────────────── */

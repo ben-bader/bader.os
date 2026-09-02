@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useInView } from '@/hooks/useInView'
-import { education, internships, projectSystems } from '@/lib/content'
+import { education, internships } from '@/lib/content'
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    TYPES
@@ -27,7 +27,9 @@ interface TimelineEvent {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TIMELINE DATA  (chronological)
+   TIMELINE DATA  (chronological — education + experience only)
+   Projects are shown in full detail in LayerSystems.
+   No duplicate entries here.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const TIMELINE: TimelineEvent[] = [
@@ -44,9 +46,9 @@ const TIMELINE: TimelineEvent[] = [
     description: education[1].description,
     stack: ['Algorithms', 'OOP', 'Databases', 'Networks', 'Web Development'],
     responsibilities: [
-      'Completed a two-year university technology diploma',
-      'Built foundational software engineering knowledge',
-      'Developed skills in web development and database design',
+      'Two-year university technology diploma in Computer Engineering',
+      'Foundations in algorithms, data structures and object-oriented programming',
+      'Web development, databases, networks and software engineering',
     ],
     status: 'completed',
   },
@@ -64,34 +66,6 @@ const TIMELINE: TimelineEvent[] = [
     description: internships[0].description,
     stack: internships[0].stack,
     responsibilities: internships[0].responsibilities,
-    status: 'completed',
-  },
-  {
-    id: 'innovex',
-    sortDate: '2025-07',
-    displayDate: '2025',
-    title: 'Innovex',
-    category: 'project',
-    categoryLabel: 'Project',
-    color: '#f6ad55',
-    description: projectSystems.find(p => p.id === 'innovex')!.description,
-    stack: projectSystems.find(p => p.id === 'innovex')!.stack,
-    responsibilities: projectSystems.find(p => p.id === 'innovex')!.responsibilities,
-    github: projectSystems.find(p => p.id === 'innovex')!.github,
-    status: 'completed',
-  },
-  {
-    id: 'onee-sys',
-    sortDate: '2025-08',
-    displayDate: '2025',
-    title: 'ONEE-SYS',
-    category: 'project',
-    categoryLabel: 'Project',
-    color: '#fc8181',
-    description: projectSystems.find(p => p.id === 'onee-sys')!.description,
-    stack: projectSystems.find(p => p.id === 'onee-sys')!.stack,
-    responsibilities: projectSystems.find(p => p.id === 'onee-sys')!.responsibilities,
-    github: projectSystems.find(p => p.id === 'onee-sys')!.github,
     status: 'completed',
   },
   {
@@ -113,20 +87,20 @@ const TIMELINE: TimelineEvent[] = [
   {
     id: 'diploma',
     sortDate: '2026-06',
-    displayDate: '2026',
-    title: 'Diploma Obtained',
+    displayDate: 'June 2026',
+    title: 'DUT Diploma Obtained',
     category: 'diploma',
     categoryLabel: 'Milestone',
     color: '#9f7aea',
     organization: 'DUT Génie Informatique',
     location: 'Meknès, Morocco',
     description:
-      'Successfully completed the two-year DUT diploma in Computer Engineering. A foundation of software engineering principles, web development, databases, and networks.',
+      'Completed the two-year DUT diploma in Computer Engineering. Covers software engineering principles, web development, databases, networks, and object-oriented programming.',
     stack: [],
     responsibilities: [
-      'Completed comprehensive engineering diploma',
-      'Demonstrated proficiency in core CS concepts',
-      'Ready for advanced engineering studies',
+      'Two-year computer engineering diploma awarded',
+      'Core CS curriculum: algorithms, OOP, databases, networks',
+      'Preparation for engineering degree studies',
     ],
     status: 'completed',
   },
@@ -141,60 +115,13 @@ const TIMELINE: TimelineEvent[] = [
     organization: "EILCO — École d'Ingénieurs du Littoral Côte d'Opale",
     location: 'Calais, France',
     description: education[0].description,
-    stack: ['Software Engineering', 'Full-Stack', 'Databases', 'Distributed Systems'],
+    stack: ['Software Engineering', 'Full-Stack Development', 'Databases', 'Distributed Systems'],
     responsibilities: [
-      'Currently pursuing engineering degree in Computer Engineering',
-      'Building on DUT foundation with advanced studies',
-      'Developing full-stack and distributed systems expertise',
+      'Engineering degree in Computer Engineering at EILCO, Calais',
+      'Building on DUT foundation with advanced software engineering',
+      'Full-stack development, distributed systems, and backend architecture',
     ],
     status: 'current',
-  },
-  {
-    id: 'atlashr',
-    sortDate: '2026-08',
-    displayDate: '2026',
-    title: 'AtlasHR',
-    category: 'project',
-    categoryLabel: 'Project',
-    color: '#63b3ed',
-    description: projectSystems.find(p => p.id === 'atlashr')!.description,
-    stack: projectSystems.find(p => p.id === 'atlashr')!.stack,
-    responsibilities: projectSystems.find(p => p.id === 'atlashr')!.responsibilities,
-    github: projectSystems.find(p => p.id === 'atlashr')!.github,
-    status: 'active',
-  },
-  {
-    id: 'homely',
-    sortDate: '2026-09',
-    displayDate: '2026',
-    title: 'Homely',
-    category: 'project',
-    categoryLabel: 'Project',
-    color: '#76e4f7',
-    description: projectSystems.find(p => p.id === 'homely')!.description,
-    stack: projectSystems.find(p => p.id === 'homely')!.stack,
-    responsibilities: projectSystems.find(p => p.id === 'homely')!.responsibilities,
-    github: projectSystems.find(p => p.id === 'homely')!.github,
-    status: 'active',
-  },
-  {
-    id: 'portfolio',
-    sortDate: '2026-10',
-    displayDate: '2026',
-    title: 'bader.os',
-    category: 'project',
-    categoryLabel: 'Project',
-    color: '#e2e8f0',
-    description:
-      'Portfolio and personal developer OS — designed as a minimalist interface highlighting my education, internship experiences, and software projects.',
-    stack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Portfolio Design'],
-    responsibilities: [
-      'Portfolio architecture and design',
-      'Career timeline presentation',
-      'Project showcase',
-    ],
-    github: 'https://github.com/ben-bader',
-    status: 'active',
   },
 ]
 
@@ -233,7 +160,7 @@ function TimelineHeader() {
       style={{ paddingTop: 'var(--sp-7)', paddingBottom: 'var(--sp-4)' }}
     >
       <div className="layer-header" style={{ marginBottom: 'var(--sp-3)' }}>
-        <span className="t-system" style={{ color: 'var(--pulse)' }}>L02 / MEMORY</span>
+        <span className="t-system" style={{ color: 'var(--pulse)' }}>L02 / EXPERIENCE</span>
         <div className="wire-h" style={{ width: '42px' }} />
         <span className="t-system">{TIMELINE.length} MILESTONES</span>
       </div>
@@ -255,7 +182,7 @@ function TimelineHeader() {
           lineHeight: 1.7,
         }}
       >
-        A chronological timeline of my education, internships, and software projects.
+        Education and internship experience — chronological.
       </p>
     </div>
   )
@@ -907,7 +834,7 @@ export default function LayerMemory() {
     <section
       id="layer-memory"
       className="os-section"
-      aria-label="Layer 02: Memory"
+      aria-label="Layer 02: Experience &amp; Education"
       style={{ background: 'var(--void)' }}
     >
       <style>{`
