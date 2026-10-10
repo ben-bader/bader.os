@@ -123,16 +123,16 @@ export const knowledgeNodes: KnowledgeNode[] = [
   // ── Languages ──────────────────────────────────────────────────────
   { id: 'typescript', label: 'TypeScript',  category: 'language',  weight: 9,
     connections: ['react', 'nextjs', 'prisma', 'tailwind'],
-    projects: ['atlashr', 'innovex'], since: 2024, color: '#3178c6' },
+    projects: ['atlashr', 'innovex','homely'], since: 2024, color: '#3178c6' },
   { id: 'java',       label: 'Java',        category: 'language',  weight: 9,
     connections: ['springboot', 'docker', 'postgresql', 'rabbitmq', 'jwt'],
-    projects: ['atlashr'], since: 2024, color: '#ed8b00' },
+    projects: ['atlashr','homely'], since: 2024, color: '#ed8b00' },
   { id: 'php',        label: 'PHP',         category: 'language',  weight: 8,
     connections: ['laravel', 'sqlite', 'mysql'],
     projects: ['onee-sys', 'homely'], since: 2025, color: '#777bb4' },
   { id: 'javascript', label: 'JavaScript',  category: 'language',  weight: 8,
     connections: ['react', 'typescript', 'nodejs'],
-    projects: ['innovex', 'homely'], since: 2024, color: '#f7df1e' },
+    projects: ['innovex', 'homely','atlashr'], since: 2024, color: '#f7df1e' },
   { id: 'python',     label: 'Python',      category: 'language',  weight: 4,
     connections: [],
     projects: [], since: 2024, color: '#3572A5' },
@@ -146,19 +146,19 @@ export const knowledgeNodes: KnowledgeNode[] = [
   // ── Frameworks ─────────────────────────────────────────────────────
   { id: 'react',      label: 'React',       category: 'framework', weight: 9,
     connections: ['typescript', 'nextjs', 'tailwind', 'javascript'],
-    projects: ['atlashr', 'innovex'], since: 2024, color: '#61dafb' },
+    projects: ['atlashr', 'innovex','homely'], since: 2024, color: '#61dafb' },
   { id: 'nextjs',     label: 'Next.js',     category: 'framework', weight: 10,
     connections: ['react', 'typescript', 'prisma', 'tailwind', 'vercel'],
-    projects: ['atlashr', 'innovex'], since: 2024, color: '#e2e8f0' },
+    projects: ['atlashr', 'innovex','homely'], since: 2024, color: '#e2e8f0' },
   { id: 'springboot', label: 'Spring Boot', category: 'framework', weight: 10,
     connections: ['java', 'postgresql', 'docker', 'rabbitmq', 'jwt'],
     projects: ['atlashr', 'homely'], since: 2024, color: '#6db33f' },
   { id: 'laravel',    label: 'Laravel',     category: 'framework', weight: 8,
     connections: ['php', 'sqlite', 'mysql', 'jwt'],
-    projects: ['onee-sys', 'homely'], since: 2025, color: '#ff2d20' },
+    projects: ['onee-sys'], since: 2025, color: '#ff2d20' },
   { id: 'tailwind',   label: 'Tailwind CSS',category: 'tool',      weight: 7,
     connections: ['react', 'nextjs'],
-    projects: ['atlashr', 'innovex'], since: 2024, color: '#38bdf8' },
+    projects: ['atlashr', 'innovex','homley','onee-sys'], since: 2024, color: '#38bdf8' },
 
   // ── Databases ──────────────────────────────────────────────────────
   { id: 'postgresql', label: 'PostgreSQL',  category: 'database',  weight: 9,
@@ -166,7 +166,7 @@ export const knowledgeNodes: KnowledgeNode[] = [
     projects: ['atlashr', 'innovex', 'homely'], since: 2024, color: '#4169e1' },
   { id: 'mysql',      label: 'MySQL',       category: 'database',  weight: 6,
     connections: ['laravel', 'php', 'sql'],
-    projects: ['homely'], since: 2024, color: '#4479a1' },
+    projects: [], since: 2024, color: '#4479a1' },
   { id: 'sqlite',     label: 'SQLite',      category: 'database',  weight: 6,
     connections: ['laravel', 'php', 'sql'],
     projects: ['onee-sys'], since: 2025, color: '#76e4f7' },
@@ -189,7 +189,7 @@ export const knowledgeNodes: KnowledgeNode[] = [
     projects: ['atlashr'], since: 2025, color: '#ff6600' },
   { id: 'jwt',        label: 'JWT',         category: 'concept',   weight: 7,
     connections: ['springboot', 'laravel', 'nextjs'],
-    projects: ['atlashr', 'onee-sys', 'homely', 'innovex'], since: 2024, color: '#9f7aea' },
+    projects: ['atlashr', 'homely', 'innovex'], since: 2024, color: '#9f7aea' },
   { id: 'vercel',     label: 'Vercel',      category: 'devops',    weight: 6,
     connections: ['nextjs'],
     projects: ['innovex'], since: 2025, color: '#e2e8f0' },
@@ -245,13 +245,13 @@ export const projectSystems: ProjectSystem[] = [
       { label: 'Messaging',     value: 'RabbitMQ' },
     ],
     nodes: [
-      { id: 'client',   label: 'Next.js',     role: 'Admin dashboard', status: 'running', color: '#e2e8f0' },
-      { id: 'gateway',  label: 'API Gateway', role: 'Routing & auth',  status: 'running', color: '#63b3ed' },
-      { id: 'auth',     label: 'Auth Svc',    role: 'JWT / RBAC',     status: 'running', color: '#9f7aea' },
-      { id: 'employee', label: 'Employee Svc',role: 'Core domain',    status: 'running', color: '#68d391' },
-      { id: 'queue',    label: 'RabbitMQ',    role: 'Message bus',    status: 'running', color: '#ff6600' },
-      { id: 'db',       label: 'PostgreSQL',  role: 'Persistence',    status: 'running', color: '#4169e1' },
-      { id: 'docker',   label: 'Docker',      role: 'Containers',     status: 'running', color: '#2496ed' },
+      { id: 'client',   label: 'Next.js',     role: 'Admin dashboard', status: 'pending', color: '#e2e8f0' },
+      { id: 'gateway',  label: 'API Gateway', role: 'Routing & auth',  status: 'pending', color: '#63b3ed' },
+      { id: 'auth',     label: 'Auth Svc',    role: 'JWT / RBAC',     status: 'pending', color: '#9f7aea' },
+      { id: 'employee', label: 'Employee Svc',role: 'Core domain',    status: 'pending', color: '#68d391' },
+      { id: 'queue',    label: 'RabbitMQ',    role: 'Message bus',    status: 'pending', color: '#ff6600' },
+      { id: 'db',       label: 'PostgreSQL',  role: 'Persistence',    status: 'pending', color: '#4169e1' },
+      { id: 'docker',   label: 'Docker',      role: 'Containers',     status: 'pending', color: '#2496ed' },
     ],
     edges: [
       { from: 'client',   to: 'gateway',  type: 'sync',  label: 'HTTPS' },
@@ -353,9 +353,9 @@ export const projectSystems: ProjectSystem[] = [
       { label: 'Type',     value: 'SaaS' },
     ],
     nodes: [
-      { id: 'api',  label: 'Spring Boot', role: 'REST API',   status: 'running', color: '#6db33f' },
-      { id: 'auth', label: 'JWT Auth',    role: 'RBAC',       status: 'running', color: '#9f7aea' },
-      { id: 'db',   label: 'PostgreSQL',  role: 'Data store', status: 'running', color: '#4169e1' },
+      { id: 'api',  label: 'Spring Boot', role: 'REST API',   status: 'pending', color: '#6db33f' },
+      { id: 'auth', label: 'JWT Auth',    role: 'RBAC',       status: 'pending', color: '#9f7aea' },
+      { id: 'db',   label: 'PostgreSQL',  role: 'Data store', status: 'pending', color: '#4169e1' },
     ],
     edges: [
       { from: 'api',  to: 'auth', type: 'sync', label: 'verify' },
@@ -500,7 +500,7 @@ export const processSteps = [
 
 /* ─── Intelligence metrics — computed from real project data ─────────── */
 export const intelligenceMetrics = [
-  { id: 'projects',      label: 'Projects shipped',         value: 4,  suffix: '',  detail: 'AtlasHR, Innovex, Homely, ONEE-SYS' },
+  { id: 'projects',      label: 'Projects',                 value: 4,  suffix: '',  detail: '2 live or deployed · 2 in development' },
   { id: 'internships',   label: 'Internships',              value: 2,  suffix: '',  detail: 'ONEE (2025), 2SIS Technologies (2026)' },
   { id: 'languages',     label: 'Programming languages',    value: 7,  suffix: '',  detail: 'JS, TS, Java, PHP, SQL, C, Python' },
   { id: 'frameworks',    label: 'Core frameworks',          value: 4,  suffix: '',  detail: 'React, Next.js, Spring Boot, Laravel' },
@@ -515,3 +515,118 @@ export const systemStats = [
   { id: 'stack',       label: 'technologies', value: '15+' },
   { id: 'education',   label: 'current',     value: 'EILCO' },
 ]
+
+export const TIMELINE: TimelineEvent[] = [
+  {
+    id: 'est-meknes',
+    sortDate: '2024-01',
+    displayDate: '2024 – 2026',
+    title: 'DUT Génie Informatique',
+    category: 'education',
+    categoryLabel: 'Education',
+    color: '#9f7aea',
+    organization: 'École Supérieure de Technologie — Meknès',
+    location: 'Meknès, Morocco',
+    description: education[1].description,
+    stack: ['Algorithms', 'OOP', 'Databases', 'Networks', 'Web Development'],
+    responsibilities: [
+      'Two-year university technology diploma in Computer Engineering',
+      'Foundations in algorithms, data structures and object-oriented programming',
+      'Web development, databases, networks and software engineering',
+    ],
+    status: 'completed',
+  },
+  {
+    id: 'onee',
+    sortDate: '2025-06',
+    displayDate: 'June 2025',
+    title: 'Software Engineering Intern',
+    category: 'internship',
+    categoryLabel: 'Internship',
+    color: '#68d391',
+    organization: 'ONEE – Branche Eau',
+    location: 'Meknès, Morocco',
+    role: 'Software Engineering Intern',
+    description: internships[0].description,
+    stack: internships[0].stack,
+    responsibilities: internships[0].responsibilities,
+    status: 'completed',
+  },
+  {
+    id: '2sis',
+    sortDate: '2026-04',
+    displayDate: 'April – June 2026',
+    title: 'Full-Stack Developer Intern',
+    category: 'internship',
+    categoryLabel: 'Internship',
+    color: '#48bb78',
+    organization: '2SIS Technologies',
+    location: 'Morocco',
+    role: 'Full-Stack Developer Intern',
+    description: internships[1].description,
+    stack: internships[1].stack,
+    responsibilities: internships[1].responsibilities,
+    status: 'completed',
+  },
+  {
+    id: 'diploma',
+    sortDate: '2026-06',
+    displayDate: 'June 2026',
+    title: 'DUT Diploma Obtained',
+    category: 'diploma',
+    categoryLabel: 'Milestone',
+    color: '#9f7aea',
+    organization: 'DUT Génie Informatique',
+    location: 'Meknès, Morocco',
+    description:
+      'Completed the two-year DUT diploma in Computer Engineering. Covers software engineering principles, web development, databases, networks, and object-oriented programming.',
+    stack: [],
+    responsibilities: [
+      'Two-year computer engineering diploma awarded',
+      'Core CS curriculum: algorithms, OOP, databases, networks',
+      'Preparation for engineering degree studies',
+    ],
+    status: 'completed',
+  },
+  {
+    id: 'eilco',
+    sortDate: '2026-07',
+    displayDate: '2026 – Present',
+    title: 'Computer Engineering',
+    category: 'education',
+    categoryLabel: 'Education',
+    color: '#63b3ed',
+    organization: "EILCO — École d'Ingénieurs du Littoral Côte d'Opale",
+    location: 'Calais, France',
+    description: education[0].description,
+    stack: [
+      'Software Engineering',
+      'Full-Stack Development',
+      'Databases',
+      'Distributed Systems',
+    ],
+    responsibilities: [
+      'Engineering degree in Computer Engineering at EILCO, Calais',
+      'Building on DUT foundation with advanced software engineering',
+      'Full-stack development, distributed systems, and backend architecture',
+    ],
+    status: 'current',
+  },
+]
+export interface TimelineEvent {
+  readonly id: string
+  readonly sortDate: string
+  readonly displayDate: string
+  readonly title: string
+  readonly category: 'education' | 'internship' | 'project' | 'diploma'
+  readonly categoryLabel: string
+  readonly color: string
+  readonly organization?: string
+  readonly location?: string
+  readonly role?: string
+  readonly description: string
+  readonly stack: string[]
+  readonly responsibilities: string[]
+  readonly github?: string
+  readonly status: 'current' | 'completed' | 'active'
+}

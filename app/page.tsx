@@ -1,5 +1,5 @@
-import SystemOS from '@/components/os/SystemOS'
+import PortfolioPage from '@/components/portfolio/PortfolioPage'
 
 export default function HomePage() {
-  return <SystemOS />
+  return <PortfolioPage />
 }

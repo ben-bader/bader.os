@@ -34,11 +34,12 @@ export default function KonamiEgg() {
       />
       <div className="relative text-center">
         <p
-          className="font-thin leading-none"
+          className="font-semibold leading-none"
           style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--font-sans)',
             fontSize: 'clamp(2rem,8vw,6rem)',
-            letterSpacing: '-0.04em',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
             color: 'var(--pulse)',
             animation: 'konamiBounce 0.5s ease infinite alternate',
             filter: 'drop-shadow(0 0 20px var(--pulse))',

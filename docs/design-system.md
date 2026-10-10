@@ -1,137 +1,28 @@
-# Design System
+# Design system
 
-## Philosophy
+## Direction
 
-Minimal.
+Midnight ink, electric lime, and mist form a restrained spatial editorial identity. The visual weight comes from typography, asymmetry, layered project maps, clear content hierarchy, and one persistent procedural WebGL material. The page is not a fake operating system or a collection of dashboard cards.
 
-Premium.
+## Composition
 
-Elegant.
+- Use a fluid page gutter and a 1520px outer measure.
+- Keep the hero asymmetric, with readable DOM content at the left and the procedural object behind it.
+- Give the two lead projects large, alternating compositions. Keep additional projects compact.
+- Use one column for dense mobile content and retain a clear reading order.
+- Keep the shared Canvas behind all page content and mark it `aria-hidden`.
 
-Editorial.
+## Interaction and motion
 
-Modern.
+- Use native anchors, lists, and disclosure elements for page navigation and project details.
+- The client side header tracks the section at the reading line with `IntersectionObserver`.
+- GSAP animates section headings and coordinates project map focus. R3F owns scene motion and advances Lenis.
+- Respect `prefers-reduced-motion`; do not require animation to reveal content or use controls.
+- If WebGL is unavailable, the DOM layout and CSS fallback remain useful.
 
-High-end.
+## Content and architecture
 
-Every pixel intentional.
-
-Never cluttered.
-
-Lots of whitespace.
-
-## Grid
-
-Desktop
-
-12 columns
-
-Container
-
-1440px
-
-Content Width
-
-1280px
-
-Tablet
-
-8 columns
-
-Mobile
-
-4 columns
-
-## Spacing Scale
-
-4
-
-8
-
-12
-
-16
-
-24
-
-32
-
-40
-
-48
-
-64
-
-80
-
-96
-
-128
-
-Never invent spacing.
-
-Use this system.
-
-## Border Radius
-
-Buttons
-
-14px
-
-Cards
-
-24px
-
-Images
-
-28px
-
-Dialogs
-
-32px
-
-Pills
-
-999px
-
-## Shadows
-
-Very soft.
-
-Large blur.
-
-Low opacity.
-
-No harsh shadows.
-
-## Borders
-
-1px
-
-rgba(255,255,255,0.08)
-
-Glass cards
-
-backdrop blur
-
-16px
-
-## Icons
-
-Lucide Icons.
-
-Minimal.
-
-Consistent stroke.
-
-2px.
-
-## Layout
-
-Everything aligned.
-
-Nothing random.
-
-Follow visual rhythm.
-
-Use generous whitespace.
+- Keep project facts in `lib/content.ts`.
+- Build architecture visualizations from documented nodes and edges.
+- Show project status in text and do not present development work as completed production software.
+- Keep server rendered content in the App Router page component; use Client Components only for browser interaction.

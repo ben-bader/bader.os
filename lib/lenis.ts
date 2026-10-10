@@ -11,11 +11,11 @@ type LenisInstance = {
 
 let _lenis: LenisInstance | null = null
 
-export function setLenis(instance: LenisInstance) {
+export function setLenis(instance: LenisInstance | null) {
   _lenis = instance
 }
 
-export function getLenis() {
+export function getLenis(): LenisInstance | null {
   return _lenis
 }
 
@@ -27,7 +27,9 @@ export function scrollToId(id: string, offset = 0) {
   const el = document.getElementById(id)
   if (!el) return
 
-  if (_lenis) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.scrollIntoView({ behavior: 'instant' })
+  } else if (_lenis) {
     _lenis.scrollTo(el, { offset, duration: 1.4, easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) })
   } else {
     el.scrollIntoView({ behavior: 'smooth' })

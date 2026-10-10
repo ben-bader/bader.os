@@ -1,0 +1,166 @@
+'use client'
+
+import { useEffect } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
+import { projectFocusBus } from '@/lib/experience/ProjectFocusBus'
+import { pointerBus } from '@/lib/experience/PointerBus'
+
+gsap.registerPlugin(ScrollTrigger, useGSAP)
+
+export default function MotionOrchestrator() {
+  useGSAP(() => {
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      const chapters = gsap.utils.toArray<HTMLElement>('#main-content > section, #layer-legacy')
+      chapters.forEach(chapter => {
+        const heading = chapter.querySelector<HTMLElement>('h1, h2')
+        const description = chapter.querySelector<HTMLElement>('.section-description')
+        if (!heading) return
+
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: chapter,
+            start: 'top 76%',
+            once: true,
+          },
+        })
+        timeline.fromTo(heading, { y: 18 }, { y: 0, duration: 0.64, ease: 'power2.out' })
+        if (description) {
+          timeline.fromTo(description, { y: 10 }, { y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.38')
+        }
+      })
+
+      gsap.utils.toArray<HTMLElement>('.project-record').forEach(record => {
+        gsap.fromTo(record, { y: 14 }, {
+          y: 0,
+          duration: 0.62,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: record, start: 'top 84%', once: true },
+        })
+      })
+    })
+    return () => media.revert()
+  }, [])
+
+  useEffect(() => {
+    const records = Array.from(document.querySelectorAll<HTMLElement>('.project-record'))
+    let focusTween: gsap.core.Tween | null = null
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const tween = (record: HTMLElement, active: boolean) => {
+      const hover = active ? 1 : 0
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        record.style.setProperty('--project-hover', String(hover))
+      } else {
+        gsap.to(record, {
+          '--project-hover': hover,
+          duration: active ? 0.32 : 0.2,
+          ease: active ? 'power2.out' : 'power1.out',
+          overwrite: 'auto',
+        })
+      }
+      const heading = record.querySelector('h3')
+      const id = heading?.id ?? null
+      if (!active) {
+        if (projectFocusBus.getSnapshot().id !== id) return
+        if (reducedMotion) {
+          projectFocusBus.set(null, 0)
+          return
+        }
+        focusTween?.kill()
+        const progress = { value: projectFocusBus.getSnapshot().progress }
+        focusTween = gsap.to(progress, {
+          value: 0,
+          duration: 0.24,
+          ease: 'power1.out',
+          onUpdate: () => projectFocusBus.setProgress(progress.value),
+          onComplete: () => projectFocusBus.set(null, 0),
+        })
+        return
+      }
+      const surface = record.querySelector<HTMLElement>('.technical-flow') ?? record
+      const bounds = surface.getBoundingClientRect()
+      const snapshot = projectFocusBus.getSnapshot()
+      const startProgress = reducedMotion ? 1 : snapshot.id === id ? snapshot.progress : 0
+      focusTween?.kill()
+      projectFocusBus.set(id, startProgress, {
+        x: bounds.left,
+        y: bounds.top,
+        width: bounds.width,
+        height: bounds.height,
+      })
+      if (reducedMotion) return
+      const progress = { value: startProgress }
+      focusTween = gsap.to(progress, {
+        value: 1,
+        duration: 0.48,
+        ease: 'power2.out',
+        onUpdate: () => projectFocusBus.setProgress(progress.value),
+      })
+    }
+
+    const enter = (event: Event) => {
+      const target = event.target as HTMLElement | null
+      const record = target?.closest<HTMLElement>('.project-record')
+      const relatedTarget = event instanceof PointerEvent || event instanceof FocusEvent ? event.relatedTarget : null
+      if (record && !record.contains(relatedTarget as Node | null)) tween(record, true)
+    }
+    const leave = (event: Event) => {
+      const target = event.target as HTMLElement | null
+      const record = target?.closest<HTMLElement>('.project-record')
+      if (!record || (event instanceof FocusEvent && record.contains(event.relatedTarget as Node | null))) return
+      if (event instanceof PointerEvent && record.contains(event.relatedTarget as Node | null)) return
+      if (event instanceof PointerEvent && record.matches(':focus-within')) return
+      const pointer = pointerBus.getSnapshot()
+      if (pointer.inside) {
+        const clientX = ((pointer.x + 1) / 2) * window.innerWidth
+        const clientY = ((1 - pointer.y) / 2) * window.innerHeight
+        if (document.elementFromPoint(clientX, clientY)?.closest('.project-record') === record) return
+      }
+      tween(record, false)
+    }
+    const updateSurfacePoint = () => {
+      const pointer = pointerBus.getSnapshot()
+      if (!pointer.inside) return
+      const clientX = ((pointer.x + 1) / 2) * window.innerWidth
+      const clientY = ((1 - pointer.y) / 2) * window.innerHeight
+      const record = document.elementFromPoint(clientX, clientY)?.closest<HTMLElement>('.project-record')
+      if (!record) return
+      const bounds = record.getBoundingClientRect()
+      record.style.setProperty('--pointer-x', `${((clientX - bounds.left) / Math.max(bounds.width, 1)) * 100}%`)
+      record.style.setProperty('--pointer-y', `${((clientY - bounds.top) / Math.max(bounds.height, 1)) * 100}%`)
+    }
+    const refreshFocusRect = () => {
+      const id = projectFocusBus.getSnapshot().id
+      if (!id) return
+      const article = document.getElementById(id)?.closest<HTMLElement>('.project-record')
+      const surface = article?.querySelector<HTMLElement>('.technical-flow') ?? article
+      if (!surface) return
+      const bounds = surface.getBoundingClientRect()
+      projectFocusBus.updateRect({ x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height })
+    }
+    const resizeObserver = new ResizeObserver(refreshFocusRect)
+    records.forEach(record => resizeObserver.observe(record))
+    window.addEventListener('resize', refreshFocusRect, { passive: true })
+
+    document.addEventListener('pointerover', enter)
+    document.addEventListener('pointerout', leave)
+    document.addEventListener('focusin', enter)
+    document.addEventListener('focusout', leave)
+    const unsubscribePointer = pointerBus.subscribe(updateSurfacePoint)
+    return () => {
+      document.removeEventListener('pointerover', enter)
+      document.removeEventListener('pointerout', leave)
+      document.removeEventListener('focusin', enter)
+      document.removeEventListener('focusout', leave)
+      unsubscribePointer()
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', refreshFocusRect)
+      records.forEach(record => gsap.killTweensOf(record))
+      focusTween?.kill()
+    }
+  }, [])
+
+  return null
+}

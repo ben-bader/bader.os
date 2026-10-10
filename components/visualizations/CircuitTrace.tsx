@@ -400,14 +400,14 @@ export default function CircuitTrace() {
         }
 
         // Label — service name
-        ctx.font         = `600 8px var(--font-mono, monospace)`
+        ctx.font         = `600 8.5px var(--font-mono, monospace)`
         ctx.fillStyle    = lit || isHov ? '#fff' : 'rgba(160,180,160,0.55)'
         ctx.textAlign    = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(pad.label.toUpperCase().slice(0, 12), pad.x + pad.w / 2, pad.y + pad.h / 2 - 4)
 
         // Role — smaller
-        ctx.font      = `400 7px var(--font-mono, monospace)`
+        ctx.font      = `400 7.5px var(--font-mono, monospace)`
         ctx.fillStyle = lit || isHov ? pad.color + 'aa' : 'rgba(100,140,100,0.35)'
         ctx.fillText(pad.role.slice(0, 16), pad.x + pad.w / 2, pad.y + pad.h / 2 + 7)
       })
@@ -463,9 +463,10 @@ export default function CircuitTrace() {
                 border:     `1px solid ${on ? 'rgba(99,179,237,0.35)' : 'rgba(80,120,80,0.3)'}`,
                 color:      on ? 'var(--text-0)' : 'var(--text-2)',
                 transition: 'all 0.2s ease',
-                fontFamily: 'var(--font-mono)',
-                fontSize:   '0.625rem',
-                letterSpacing: '0.12em',
+                fontFamily: 'var(--font-sans)',
+                fontSize:   '0.6875rem',
+                fontWeight: 500,
+                letterSpacing: '0.08em',
                 textTransform: 'uppercase',
               }}
               data-hover="true"
@@ -523,9 +524,10 @@ export default function CircuitTrace() {
         {/* Board label */}
         <div style={{
           position: 'absolute', bottom: 10, right: 14,
-          fontFamily: 'var(--font-mono)',
-          fontSize: '0.5rem',
-          letterSpacing: '0.18em',
+          fontFamily: 'var(--font-sans)',
+          fontSize: '0.625rem',
+          fontWeight: 500,
+          letterSpacing: '0.12em',
           color: 'rgba(80,120,80,0.3)',
           textTransform: 'uppercase',
           pointerEvents: 'none',

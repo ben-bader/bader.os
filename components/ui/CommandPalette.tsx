@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { LAYERS } from '@/system/layers'
 import { identity } from '@/lib/content'
 import { scrollToId } from '@/lib/lenis'
@@ -12,7 +12,7 @@ interface Cmd {
   action: () => void
 }
 
-const MONO = 'var(--font-mono)'
+const MONO = 'var(--font-sans)'
 
 const LAYER_DESCS: Record<string, string> = {
   core:         'Identity, stack overview, availability',
@@ -69,6 +69,11 @@ export default function CommandPalette() {
     return !q || cmd.label.toLowerCase().includes(q) || cmd.desc.toLowerCase().includes(q)
   })
 
+  // Ensure cursor is always within bounds using useMemo
+  const safeCursor = useMemo(() => {
+    return cursor >= filtered.length ? Math.max(filtered.length - 1, 0) : cursor
+  }, [cursor, filtered.length])
+
   const close = useCallback(() => {
     setOpen(false)
     setQuery('')
@@ -94,14 +99,10 @@ export default function CommandPalette() {
   }, [open])
 
   useEffect(() => {
-    if (cursor >= filtered.length) setCursor(Math.max(filtered.length - 1, 0))
-  }, [filtered.length, cursor])
-
-  useEffect(() => {
     if (!listRef.current) return
     const el = listRef.current.querySelector('[data-active="true"]') as HTMLElement | null
     el?.scrollIntoView({ block: 'nearest' })
-  }, [cursor])
+  }, [safeCursor])
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
@@ -112,8 +113,8 @@ export default function CommandPalette() {
       e.preventDefault()
       setCursor(c => Math.max(c - 1, 0))
     }
-    if (e.key === 'Enter' && filtered[cursor]) {
-      filtered[cursor].action()
+    if (e.key === 'Enter' && filtered[safeCursor]) {
+      filtered[safeCursor].action()
       close()
     }
   }
@@ -152,8 +153,9 @@ export default function CommandPalette() {
           borderLeftColor: 'var(--wire-bright)',
           color: 'var(--text-2)',
           fontFamily: MONO,
-          fontSize: '0.6rem',
-          letterSpacing: '0.14em',
+          fontSize: '0.6875rem',
+          fontWeight: 500,
+          letterSpacing: '0.08em',
           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
           cursor: 'pointer',
         }}
@@ -259,8 +261,9 @@ export default function CommandPalette() {
               border: 'none',
               outline: 'none',
               fontFamily: MONO,
-              fontSize: '0.8rem',
-              letterSpacing: '0.02em',
+              fontSize: '0.8125rem',
+              fontWeight: 400,
+              letterSpacing: '0.01em',
               color: 'var(--text-0)',
             }}
           />
@@ -270,8 +273,9 @@ export default function CommandPalette() {
             style={{
               flexShrink: 0,
               fontFamily: MONO,
-              fontSize: '0.52rem',
-              letterSpacing: '0.06em',
+              fontSize: '0.625rem',
+              fontWeight: 500,
+              letterSpacing: '0.08em',
               color: 'var(--text-3)',
               background: 'rgba(255,255,255,0.04)',
               borderTopWidth: '1px',
@@ -312,16 +316,17 @@ export default function CommandPalette() {
                 padding: '32px 16px',
                 textAlign: 'center',
                 fontFamily: MONO,
-                fontSize: '0.65rem',
+                fontSize: '0.6875rem',
+                fontWeight: 500,
                 color: 'var(--text-3)',
-                letterSpacing: '0.06em',
+                letterSpacing: '0.08em',
               }}
             >
               No results
             </div>
           ) : (
             filtered.map((cmd, i) => {
-              const active = i === cursor
+              const active = i === safeCursor
               return (
                 <button
                   key={cmd.id}
@@ -330,7 +335,7 @@ export default function CommandPalette() {
                   data-hover="true"
                   onClick={() => { cmd.action(); close() }}
                   onMouseEnter={() => setCursor(i)}
-                  aria-selected={active}
+                  aria-pressed={active}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -362,7 +367,8 @@ export default function CommandPalette() {
                     <span
                       style={{
                         fontFamily: MONO,
-                        fontSize: '0.72rem',
+                        fontSize: '0.8125rem',
+                        fontWeight: 500,
                         lineHeight: 1.4,
                         color: active ? 'var(--text-0)' : 'var(--text-1)',
                         overflow: 'hidden',
@@ -376,7 +382,8 @@ export default function CommandPalette() {
                       <span
                         style={{
                           fontFamily: MONO,
-                          fontSize: '0.58rem',
+                          fontSize: '0.6875rem',
+                          fontWeight: 400,
                           lineHeight: 1.4,
                           color: 'var(--text-3)',
                           overflow: 'hidden',
@@ -394,7 +401,8 @@ export default function CommandPalette() {
                       style={{
                         flexShrink: 0,
                         fontFamily: MONO,
-                        fontSize: '0.6rem',
+                        fontSize: '0.6875rem',
+                        fontWeight: 500,
                         color: 'var(--text-3)',
                       }}
                     >

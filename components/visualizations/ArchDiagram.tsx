@@ -140,7 +140,7 @@ export default function ArchDiagram({ system }: Props) {
                 <text
                   x={mx} y={my - 7}
                   textAnchor="middle"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', fill: style.color, opacity: 0.95 }}
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: '8.5px', fill: style.color, opacity: 0.95 }}
                 >
                   {edge.label}
                 </text>
@@ -195,9 +195,9 @@ export default function ArchDiagram({ system }: Props) {
                 textAnchor="middle"
                 style={{
                   fontFamily:    'var(--font-mono)',
-                  fontSize:      '9px',
+                  fontSize:      '9.5px',
                   fontWeight:    '600',
-                  letterSpacing: '0.06em',
+                  letterSpacing: '0.05em',
                   textTransform: 'uppercase',
                   fill: dim ? 'rgba(255,255,255,0.12)' : isHov ? '#fff' : 'rgba(255,255,255,0.8)',
                 }}
@@ -210,7 +210,7 @@ export default function ArchDiagram({ system }: Props) {
                 textAnchor="middle"
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize:   '7.5px',
+                  fontSize:   '8px',
                   fill: dim ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.28)',
                 }}
               >

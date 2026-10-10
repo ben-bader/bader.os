@@ -7,9 +7,9 @@ export interface Layer {
 
 export const LAYERS: Layer[] = [
   { id: 'core',         index: 1, codename: 'CORE',         anchor: 'layer-core' },
-  { id: 'memory',       index: 2, codename: 'MEMORY',       anchor: 'layer-memory' },
-  { id: 'knowledge',    index: 3, codename: 'KNOWLEDGE',    anchor: 'layer-knowledge' },
-  { id: 'systems',      index: 4, codename: 'SYSTEMS',      anchor: 'layer-systems' },
+  { id: 'systems',      index: 2, codename: 'SYSTEMS',      anchor: 'layer-systems' },
+  { id: 'memory',       index: 3, codename: 'MEMORY',       anchor: 'layer-memory' },
+  { id: 'knowledge',    index: 4, codename: 'KNOWLEDGE',    anchor: 'layer-knowledge' },
   { id: 'process',      index: 5, codename: 'PROCESS',      anchor: 'layer-process' },
   { id: 'intelligence', index: 6, codename: 'INTELLIGENCE', anchor: 'layer-intelligence' },
   { id: 'legacy',       index: 7, codename: 'LEGACY',       anchor: 'layer-legacy' },

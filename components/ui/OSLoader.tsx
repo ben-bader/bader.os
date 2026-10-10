@@ -99,14 +99,14 @@ export default function OSLoader({ onComplete }: { onComplete: () => void }) {
         <div className="flex items-end" style={{ gap: '8px' }}>
           <span
             ref={countRef}
-            className="tabular-nums font-thin leading-none"
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(6rem,16vw,13rem)', letterSpacing: '-0.06em', color: 'var(--text-0)' }}
+            className="tabular-nums leading-none"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(6rem,16vw,13rem)', letterSpacing: '-0.04em', color: 'var(--text-0)' }}
           >
             00
           </span>
           <span
-            className="font-thin"
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(1.8rem,4vw,3.5rem)', letterSpacing: '-0.04em', color: 'var(--text-2)', paddingBottom: '12px' }}
+            className="font-medium"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1.8rem,4vw,3.5rem)', letterSpacing: '-0.02em', color: 'var(--text-2)', paddingBottom: '12px' }}
           >
             %
           </span>

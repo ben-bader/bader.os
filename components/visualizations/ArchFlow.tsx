@@ -279,8 +279,9 @@ export default function ArchFlow() {
                 background: on ? 'rgba(99,179,237,0.09)' : 'rgba(10,10,20,0.6)',
                 border: `1px solid ${on ? 'rgba(99,179,237,0.35)' : 'var(--wire)'}`,
                 color: on ? 'var(--text-0)' : 'var(--text-2)',
-                fontFamily: 'var(--font-mono)', fontSize: '0.6rem',
-                letterSpacing: '0.12em', textTransform: 'uppercase',
+                fontFamily: 'var(--font-sans)', fontSize: '0.6875rem',
+                fontWeight: 500,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
                 transition: 'all 0.2s ease',
               }}
               data-hover="true"
@@ -363,7 +364,7 @@ export default function ArchFlow() {
                   const my = (fr2.y + fr2.h / 2 + tr2.y + tr2.h / 2) / 2 - 8
                   return (
                     <text x={mx} y={my} textAnchor="middle"
-                      style={{ fontFamily: 'var(--font-mono)', fontSize: '7.5px', fill: color, opacity: 0.9, letterSpacing: '0.06em' }}>
+                      style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', fill: color, opacity: 0.9, letterSpacing: '0.05em' }}>
                       {e.label}
                     </text>
                   )
@@ -443,8 +444,8 @@ export default function ArchFlow() {
                   textAnchor="middle"
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: '8px', fontWeight: 600,
-                    letterSpacing: '0.07em', textTransform: 'uppercase',
+                    fontSize: '8.5px', fontWeight: 600,
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
                     fill: isDim ? 'rgba(255,255,255,0.15)' : isSelf ? '#fff' : 'rgba(255,255,255,0.8)',
                     transition: 'fill 0.2s ease',
                   }}>
@@ -455,7 +456,7 @@ export default function ArchFlow() {
                 <text x={rect.w / 2} y={rect.h / 2 + 9}
                   textAnchor="middle"
                   style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '7px',
+                    fontFamily: 'var(--font-mono)', fontSize: '7.5px',
                     fill: isDim ? 'rgba(255,255,255,0.07)' : node.color + '88',
                     transition: 'fill 0.2s ease',
                   }}>
@@ -496,7 +497,7 @@ export default function ArchFlow() {
           ))}
           <a href={system.github} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center"
-            style={{ gap: '5px', marginLeft: 'auto', color: 'var(--text-2)', fontSize: 'var(--text-xs)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', transition: 'color 0.2s' }}
+            style={{ gap: '5px', marginLeft: 'auto', color: 'var(--text-2)', fontSize: '0.6875rem', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-sans)', transition: 'color 0.2s' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--pulse)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-2)' }}
             data-hover="true">
