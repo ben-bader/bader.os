@@ -201,7 +201,7 @@ export default function KnowledgeGraph() {
 
         // Label
         if (isHov || isConn || n.weight >= 9) {
-          ctx.font = `${isHov ? 500 : 400} 10.5px var(--font-mono, monospace)`
+          ctx.font = `${isHov ? 500 : 400} 10.5px var(--font-code, monospace)`
           ctx.fillStyle = isHov ? '#fff' : dim ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)'
           ctx.textAlign = 'center'
           ctx.fillText(n.label, n.x, n.y - r - 5)

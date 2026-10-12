@@ -344,7 +344,7 @@ export default function SignalField() {
         // Label — shown for high-weight nodes and hovered/connected
         const showLabel = !isDim && (isSelf || isConn || (!hov && p.weight >= 8))
         if (showLabel) {
-          ctx.font        = `${isSelf ? 500 : 400} 9px var(--font-mono, monospace)`
+          ctx.font        = `${isSelf ? 500 : 400} 9px var(--font-code, monospace)`
           ctx.fillStyle   = isSelf ? '#fff' : color + 'cc'
           ctx.textAlign   = 'center'
           ctx.textBaseline= 'middle'

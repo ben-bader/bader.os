@@ -12,7 +12,7 @@ interface Cmd {
   action: () => void
 }
 
-const MONO = 'var(--font-sans)'
+const BODY_FONT = 'var(--font-body)'
 
 const LAYER_DESCS: Record<string, string> = {
   core:         'Identity, stack overview, availability',
@@ -152,7 +152,7 @@ export default function CommandPalette() {
           borderLeftStyle: 'solid',
           borderLeftColor: 'var(--wire-bright)',
           color: 'var(--text-2)',
-          fontFamily: MONO,
+          fontFamily: BODY_FONT,
           fontSize: '0.6875rem',
           fontWeight: 500,
           letterSpacing: '0.08em',
@@ -260,7 +260,7 @@ export default function CommandPalette() {
               background: 'transparent',
               border: 'none',
               outline: 'none',
-              fontFamily: MONO,
+              fontFamily: BODY_FONT,
               fontSize: '0.8125rem',
               fontWeight: 400,
               letterSpacing: '0.01em',
@@ -272,7 +272,7 @@ export default function CommandPalette() {
             aria-hidden="true"
             style={{
               flexShrink: 0,
-              fontFamily: MONO,
+              fontFamily: BODY_FONT,
               fontSize: '0.625rem',
               fontWeight: 500,
               letterSpacing: '0.08em',
@@ -315,7 +315,7 @@ export default function CommandPalette() {
               style={{
                 padding: '32px 16px',
                 textAlign: 'center',
-                fontFamily: MONO,
+                fontFamily: BODY_FONT,
                 fontSize: '0.6875rem',
                 fontWeight: 500,
                 color: 'var(--text-3)',
@@ -366,7 +366,7 @@ export default function CommandPalette() {
                   <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <span
                       style={{
-                        fontFamily: MONO,
+                        fontFamily: BODY_FONT,
                         fontSize: '0.8125rem',
                         fontWeight: 500,
                         lineHeight: 1.4,
@@ -381,7 +381,7 @@ export default function CommandPalette() {
                     {cmd.desc && (
                       <span
                         style={{
-                          fontFamily: MONO,
+                          fontFamily: BODY_FONT,
                           fontSize: '0.6875rem',
                           fontWeight: 400,
                           lineHeight: 1.4,
@@ -400,7 +400,7 @@ export default function CommandPalette() {
                       aria-hidden="true"
                       style={{
                         flexShrink: 0,
-                        fontFamily: MONO,
+                        fontFamily: BODY_FONT,
                         fontSize: '0.6875rem',
                         fontWeight: 500,
                         color: 'var(--text-3)',

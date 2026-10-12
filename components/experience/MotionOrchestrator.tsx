@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
@@ -10,7 +10,28 @@ import { pointerBus } from '@/lib/experience/PointerBus'
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 export default function MotionOrchestrator() {
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    let frame = 0
+    const activate = () => {
+      frame = window.requestAnimationFrame(() => {
+        frame = window.requestAnimationFrame(() => setHydrated(true))
+      })
+    }
+
+    if (document.readyState === 'complete') activate()
+    else window.addEventListener('load', activate, { once: true })
+
+    return () => {
+      window.removeEventListener('load', activate)
+      window.cancelAnimationFrame(frame)
+    }
+  }, [])
+
   useGSAP(() => {
+    if (!hydrated) return
+
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
       const chapters = gsap.utils.toArray<HTMLElement>('#main-content > section, #layer-legacy')
@@ -26,9 +47,9 @@ export default function MotionOrchestrator() {
             once: true,
           },
         })
-        timeline.fromTo(heading, { y: 18 }, { y: 0, duration: 0.64, ease: 'power2.out' })
+        timeline.fromTo(heading, { y: 18 }, { y: 0, duration: 0.64, ease: 'power2.out', immediateRender: false })
         if (description) {
-          timeline.fromTo(description, { y: 10 }, { y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.38')
+          timeline.fromTo(description, { y: 10 }, { y: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, '-=0.38')
         }
       })
 
@@ -37,12 +58,13 @@ export default function MotionOrchestrator() {
           y: 0,
           duration: 0.62,
           ease: 'power2.out',
+          immediateRender: false,
           scrollTrigger: { trigger: record, start: 'top 84%', once: true },
         })
       })
     })
     return () => media.revert()
-  }, [])
+  }, { dependencies: [hydrated], revertOnUpdate: true })
 
   useEffect(() => {
     const records = Array.from(document.querySelectorAll<HTMLElement>('.project-record'))

@@ -36,7 +36,7 @@ export default function KonamiEgg() {
         <p
           className="font-semibold leading-none"
           style={{
-            fontFamily: 'var(--font-sans)',
+            fontFamily: 'var(--font-body)',
             fontSize: 'clamp(2rem,8vw,6rem)',
             fontWeight: 600,
             letterSpacing: '-0.02em',

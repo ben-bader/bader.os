@@ -70,35 +70,41 @@ function FrameBridge() {
   return null
 }
 
-function createSystemLoop() {
+function createLetterBGeometry() {
   const shape = new THREE.Shape()
-  shape.moveTo(-0.78, -0.55)
-  shape.quadraticCurveTo(-0.93, -0.82, -0.64, -0.91)
-  shape.quadraticCurveTo(0.35, -1.02, 0.76, -0.75)
-  shape.quadraticCurveTo(0.98, -0.56, 0.87, -0.14)
-  shape.lineTo(0.72, 0.56)
-  shape.quadraticCurveTo(0.65, 0.89, 0.28, 0.87)
-  shape.lineTo(-0.54, 0.8)
-  shape.quadraticCurveTo(-0.88, 0.73, -0.84, 0.34)
+  shape.moveTo(-0.64, -1.12)
+  shape.lineTo(-0.64, 1.12)
+  shape.lineTo(0.08, 1.12)
+  shape.bezierCurveTo(0.74, 1.12, 1.04, 0.9, 1.04, 0.57)
+  shape.bezierCurveTo(1.04, 0.27, 0.84, 0.09, 0.56, 0.02)
+  shape.bezierCurveTo(0.96, -0.07, 1.12, -0.32, 1.12, -0.62)
+  shape.bezierCurveTo(1.12, -0.96, 0.82, -1.12, 0.08, -1.12)
   shape.closePath()
 
-  const channel = new THREE.Path()
-  channel.moveTo(-0.35, -0.3)
-  channel.quadraticCurveTo(-0.45, 0.02, -0.31, 0.28)
-  channel.lineTo(0.2, 0.33)
-  channel.quadraticCurveTo(0.43, 0.34, 0.47, 0.08)
-  channel.lineTo(0.48, -0.18)
-  channel.quadraticCurveTo(0.46, -0.33, 0.21, -0.32)
-  channel.closePath()
-  shape.holes.push(channel)
+  const upperCounter = new THREE.Path()
+  upperCounter.moveTo(-0.16, 0.2)
+  upperCounter.lineTo(0.15, 0.2)
+  upperCounter.bezierCurveTo(0.48, 0.2, 0.62, 0.31, 0.62, 0.54)
+  upperCounter.bezierCurveTo(0.62, 0.76, 0.49, 0.84, 0.15, 0.84)
+  upperCounter.lineTo(-0.16, 0.84)
+  upperCounter.closePath()
+
+  const lowerCounter = new THREE.Path()
+  lowerCounter.moveTo(-0.16, -0.84)
+  lowerCounter.lineTo(0.15, -0.84)
+  lowerCounter.bezierCurveTo(0.52, -0.84, 0.68, -0.7, 0.68, -0.45)
+  lowerCounter.bezierCurveTo(0.68, -0.24, 0.5, -0.14, 0.15, -0.14)
+  lowerCounter.lineTo(-0.16, -0.14)
+  lowerCounter.closePath()
+  shape.holes.push(upperCounter, lowerCounter)
 
   const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.2,
+    depth: 0.24,
     bevelEnabled: true,
-    bevelSegments: 5,
-    bevelSize: 0.04,
-    bevelThickness: 0.055,
-    curveSegments: 24,
+    bevelSegments: 4,
+    bevelSize: 0.035,
+    bevelThickness: 0.045,
+    curveSegments: 20,
   })
   geometry.center()
   geometry.computeVertexNormals()
@@ -113,8 +119,7 @@ function HeroObject({ level, groupRef, refractionMaterial }: {
   const group = groupRef
   const rimLight = useRef<THREE.PointLight>(null)
   const glass = useMemo(() => createEngineeringGlass(level), [level])
-  const geometry = useMemo(() => createSystemLoop(), [])
-  const lastAngle = useRef(0)
+  const geometry = useMemo(() => createLetterBGeometry(), [])
   const compact = level === 'low'
 
   useFrame((_, delta) => {
@@ -129,6 +134,8 @@ function HeroObject({ level, groupRef, refractionMaterial }: {
     const t = sectionIndex / (sections.length - 1)
     const targetX = THREE.MathUtils.lerp(1.1, -1.45, t)
     const targetY = THREE.MathUtils.lerp(0.45, -0.25, t)
+    const scrollTilt = THREE.MathUtils.clamp(scroll.velocity / 9000, -0.08, 0.08)
+    const targetRotationY = THREE.MathUtils.lerp(-0.14, 0.14, t) + scrollTilt + pointer.smoothX * 0.06
     const targetScale = 0.94 * (focused ? 1.035 : 1)
     const smoothing = 1 - Math.exp(-delta * 2.2)
 
@@ -137,17 +144,14 @@ function HeroObject({ level, groupRef, refractionMaterial }: {
     group.current.scale.x = THREE.MathUtils.lerp(group.current.scale.x, targetScale, smoothing)
     group.current.scale.y = THREE.MathUtils.lerp(group.current.scale.y, targetScale, smoothing)
     group.current.scale.z = THREE.MathUtils.lerp(group.current.scale.z, targetScale, smoothing)
-    group.current.rotation.y += (0.055 + Math.min(Math.abs(scroll.velocity) / 12000, 0.07)) * delta
-    if (focused) group.current.rotation.y += delta * 0.12
+    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, targetRotationY, 2.2, delta)
     group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, pointer.smoothY * 0.12, 1.6, delta)
     group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -pointer.smoothX * 0.11, 1.6, delta)
 
-    const targetAngle = Math.atan2(pointer.smoothY + 0.15, pointer.smoothX + 0.2)
-    const angleDelta = Math.atan2(Math.sin(targetAngle - lastAngle.current), Math.cos(targetAngle - lastAngle.current))
-    lastAngle.current += angleDelta * (1 - Math.exp(-delta * 3.4))
+    const lightAngle = Math.atan2(pointer.smoothY + 0.15, pointer.smoothX + 0.2)
     rimLight.current?.position.set(
-      group.current.position.x + Math.cos(lastAngle.current) * 2.35,
-      group.current.position.y + Math.sin(lastAngle.current) * 1.65,
+      group.current.position.x + Math.cos(lightAngle) * 2.35,
+      group.current.position.y + Math.sin(lightAngle) * 1.65,
       2.3,
     )
 

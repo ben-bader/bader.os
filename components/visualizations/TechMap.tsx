@@ -328,7 +328,7 @@ export default function TechMap() {
                   y={node.r + 13}
                   textAnchor="middle"
                   style={{
-                    fontFamily:    'var(--font-mono)',
+                    fontFamily:    'var(--font-code)',
                     fontSize:      isSelf ? '10px' : '8.5px',
                     fontWeight:    isSelf ? 600 : 400,
                     fill:          isSelf ? '#fff' : color + 'cc',

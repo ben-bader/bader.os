@@ -100,13 +100,13 @@ export default function OSLoader({ onComplete }: { onComplete: () => void }) {
           <span
             ref={countRef}
             className="tabular-nums leading-none"
-            style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(6rem,16vw,13rem)', letterSpacing: '-0.04em', color: 'var(--text-0)' }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(6rem,16vw,13rem)', letterSpacing: '-0.04em', color: 'var(--text-0)' }}
           >
             00
           </span>
           <span
             className="font-medium"
-            style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1.8rem,4vw,3.5rem)', letterSpacing: '-0.02em', color: 'var(--text-2)', paddingBottom: '12px' }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem,4vw,3.5rem)', letterSpacing: '-0.02em', color: 'var(--text-2)', paddingBottom: '12px' }}
           >
             %
           </span>

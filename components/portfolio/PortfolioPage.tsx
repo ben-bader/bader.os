@@ -1,9 +1,17 @@
 import { ArrowDownRight, ArrowUpRight, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import { identity, internships, projectSystems, TIMELINE } from '@/lib/content'
+import { getFeaturedProjects, getProjectById } from '@/lib/projects'
 import SiteHeader from './SiteHeader'
 
-const featuredProjects = projectSystems.slice(0, 2)
-const supportingProjects = projectSystems.slice(2)
+const featuredProjects = getFeaturedProjects().flatMap(record => {
+  const system = projectSystems.find(project => project.id === record.id)
+  return system ? [{ ...system, name: record.title, description: record.summary, domain: record.category, status: record.status ?? system.status, github: record.repositoryUrl ?? '', stack: record.technologies, responsibilities: record.role ? [record.role] : system.responsibilities }] : []
+})
+const supportingProjects = projectSystems.slice(2).flatMap(system => {
+  const record = getProjectById(system.id)
+  return record ? [{ ...system, name: record.title, description: record.summary, domain: record.category, status: record.status ?? system.status, github: record.repositoryUrl ?? '', stack: record.technologies }] : []
+})
 const chronology = [...TIMELINE]
   .filter(event => event.id !== 'diploma')
   .sort((a, b) => b.sortDate.localeCompare(a.sortDate))
@@ -59,7 +67,7 @@ function SystemMap({ projectId }: { projectId: string }) {
           )
         })}
       </ul>
-      <p className="map-note">Relationships reflect the project notes in this portfolio.</p>
+      <p className="map-note">Components reflect the repository or project documentation.</p>
     </div>
   )
 }
@@ -85,7 +93,8 @@ export default function PortfolioPage() {
           <div className="hero-art" aria-hidden="true">
             <div className="art-orbit art-orbit-one" />
             <div className="art-orbit art-orbit-two" />
-            <div className="art-core"><span /><span /><span /></div>
+            <div className="art-core"><code><span>const</span> build =<br />() =&gt; <span>&quot;B&quot;</span>;</code></div>
+            <span className="hero-letter-fallback">B</span>
             <span className="art-caption">A system is more<br />than its parts.</span>
             <span className="art-coordinate">01 / 06</span>
           </div>
@@ -108,14 +117,17 @@ export default function PortfolioPage() {
                     <div className="work-meta"><span>{project.domain}</span><span className="status-label"><i aria-hidden="true" />{project.status}</span></div>
                     <h3 id={`project-${project.id}`}>{project.name}</h3>
                     <p className="work-summary">{project.description}</p>
+                    
                     {internship && <p className="work-context">{internship.role} · {internship.company}{internship.location ? `, ${internship.location}` : ''}</p>}
-                    <details className="contribution-details">
+                    {project.responsibilities.length > 0 && <details className="contribution-details">
                       <summary>What I worked on <span aria-hidden="true">+</span></summary>
                       <ul>{project.responsibilities.map(item => <li key={item}>{item}</li>)}</ul>
-                    </details>
+                    </details>}
                     <ul className="tech-list" aria-label={`${project.name} technologies`}>
                       {project.stack.map(technology => <li key={technology}>{technology}</li>)}
                     </ul>
+                    <Link className="project-detail-home-link" href={`/projects/${project.id}`}>View details <ArrowRight aria-hidden="true" size={14} /></Link>
+                    {project.github && <a className="project-repository" href={project.github} target="_blank" rel="noreferrer">View repository <ArrowUpRight aria-hidden="true" size={14} /></a>}
                   </div>
                 </article>
               )
@@ -127,11 +139,12 @@ export default function PortfolioPage() {
               {supportingProjects.map(project => (
                 <article className="supporting-entry" key={project.id}>
                   <div><p className="supporting-domain">{project.domain} <span>·</span> {project.year}</p><h3>{project.name}</h3></div>
-                  <div><p>{project.description}</p><ul className="tech-list">{project.stack.slice(0, 5).map(technology => <li key={technology}>{technology}</li>)}</ul></div>
+                  <div><p>{project.description}</p><ul className="tech-list">{project.stack.slice(0, 5).map(technology => <li key={technology}>{technology}</li>)}</ul><Link className="project-detail-home-link" href={`/projects/${project.id}`}>View details <ArrowRight aria-hidden="true" size={14} /></Link>{project.github && <a className="project-repository" href={project.github} target="_blank" rel="noreferrer">View repository <ArrowUpRight aria-hidden="true" size={14} /></a>}</div>
                   <span className="supporting-status">{project.status}</span>
                 </article>
               ))}
             </div>
+            <div className="projects-catalog-cta"><p>The full archive also includes smaller web projects and experiments.</p><Link className="button button-primary" href="/projects">More projects <ArrowRight aria-hidden="true" size={16} /></Link></div>
           </div>
         </section>
 

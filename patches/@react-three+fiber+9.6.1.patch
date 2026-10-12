@@ -1,0 +1,267 @@
+diff --git a/node_modules/@react-three/fiber/dist/events-b389eeca.esm.js b/node_modules/@react-three/fiber/dist/events-b389eeca.esm.js
+index 97d8295..9d487e4 100644
+--- a/node_modules/@react-three/fiber/dist/events-b389eeca.esm.js
++++ b/node_modules/@react-three/fiber/dist/events-b389eeca.esm.js
+@@ -945,6 +945,59 @@ function createEvents(store) {
+ 
+ const isRenderer = def => !!(def != null && def.render);
+ const context = /* @__PURE__ */React.createContext(null);
++class FiberTimer extends THREE.Timer {
++  constructor() {
++    super();
++    this.autoStart = true;
++    this.elapsedTime = 0;
++    this.oldTime = 0;
++    this.startTime = performance.now();
++    this.running = false;
++    this.firstFrame = true;
++    if (typeof document !== 'undefined') this.connect(document);
++  }
++  update(timestamp) {
++    if (this.firstFrame) {
++      const time = timestamp - this._startTime;
++      this._currentTime = time;
++      this._previousTime = time;
++      this._delta = 0;
++      this._elapsed = 0;
++      this.firstFrame = false;
++    } else {
++      super.update(timestamp);
++    }
++    this.elapsedTime = this.getElapsed();
++    this.oldTime = timestamp;
++    return this;
++  }
++  getDelta() {
++    if (this.autoStart && !this.running) {
++      this.start();
++      return 0;
++    }
++    return this.running ? super.getDelta() : 0;
++  }
++  getElapsedTime() {
++    return this.elapsedTime;
++  }
++  start() {
++    this.reset();
++    this._previousTime = this._currentTime;
++    this._delta = 0;
++    this._elapsed = 0;
++    this.elapsedTime = 0;
++    this.oldTime = performance.now();
++    this.startTime = this.oldTime;
++    this.running = true;
++    this.autoStart = true;
++    this.firstFrame = false;
++  }
++  stop() {
++    this.running = false;
++    this.autoStart = false;
++  }
++}
+ const createStore = (invalidate, advance) => {
+   const rootStore = createWithEqualityFn((set, get) => {
+     const position = new THREE.Vector3();
+@@ -1013,7 +1066,7 @@ const createStore = (invalidate, advance) => {
+       linear: false,
+       flat: false,
+       controls: null,
+-      clock: new THREE.Clock(),
++      clock: new FiberTimer(),
+       pointer,
+       mouse: pointer,
+       frameloop: 'always',
+@@ -15868,6 +15921,7 @@ function unmountComponentAtNode(canvas, callback) {
+         setTimeout(() => {
+           try {
+             var _state$gl, _state$gl$renderLists, _state$gl2, _state$gl3;
++            state.clock.dispose == null ? void 0 : state.clock.dispose();
+             state.events.disconnect == null ? void 0 : state.events.disconnect();
+             (_state$gl = state.gl) == null ? void 0 : (_state$gl$renderLists = _state$gl.renderLists) == null ? void 0 : _state$gl$renderLists.dispose == null ? void 0 : _state$gl$renderLists.dispose();
+             (_state$gl2 = state.gl) == null ? void 0 : _state$gl2.forceContextLoss == null ? void 0 : _state$gl2.forceContextLoss();
+@@ -16040,6 +16094,7 @@ let subscribers;
+ let subscription;
+ function update(timestamp, state, frame) {
+   // Run local effects
++  state.clock.update(timestamp);
+   let delta = state.clock.getDelta();
+ 
+   // In frameloop='never' mode, clock times are updated using the provided timestamp
+diff --git a/node_modules/@react-three/fiber/dist/events-f19bcc32.cjs.dev.js b/node_modules/@react-three/fiber/dist/events-f19bcc32.cjs.dev.js
+index 1b04ea6..f0a166a 100644
+--- a/node_modules/@react-three/fiber/dist/events-f19bcc32.cjs.dev.js
++++ b/node_modules/@react-three/fiber/dist/events-f19bcc32.cjs.dev.js
+@@ -970,6 +970,59 @@ function createEvents(store) {
+ 
+ const isRenderer = def => !!(def != null && def.render);
+ const context = /* @__PURE__ */React__namespace.createContext(null);
++class FiberTimer extends THREE__namespace.Timer {
++  constructor() {
++    super();
++    this.autoStart = true;
++    this.elapsedTime = 0;
++    this.oldTime = 0;
++    this.startTime = performance.now();
++    this.running = false;
++    this.firstFrame = true;
++    if (typeof document !== 'undefined') this.connect(document);
++  }
++  update(timestamp) {
++    if (this.firstFrame) {
++      const time = timestamp - this._startTime;
++      this._currentTime = time;
++      this._previousTime = time;
++      this._delta = 0;
++      this._elapsed = 0;
++      this.firstFrame = false;
++    } else {
++      super.update(timestamp);
++    }
++    this.elapsedTime = this.getElapsed();
++    this.oldTime = timestamp;
++    return this;
++  }
++  getDelta() {
++    if (this.autoStart && !this.running) {
++      this.start();
++      return 0;
++    }
++    return this.running ? super.getDelta() : 0;
++  }
++  getElapsedTime() {
++    return this.elapsedTime;
++  }
++  start() {
++    this.reset();
++    this._previousTime = this._currentTime;
++    this._delta = 0;
++    this._elapsed = 0;
++    this.elapsedTime = 0;
++    this.oldTime = performance.now();
++    this.startTime = this.oldTime;
++    this.running = true;
++    this.autoStart = true;
++    this.firstFrame = false;
++  }
++  stop() {
++    this.running = false;
++    this.autoStart = false;
++  }
++}
+ const createStore = (invalidate, advance) => {
+   const rootStore = traditional.createWithEqualityFn((set, get) => {
+     const position = new THREE__namespace.Vector3();
+@@ -1038,7 +1091,7 @@ const createStore = (invalidate, advance) => {
+       linear: false,
+       flat: false,
+       controls: null,
+-      clock: new THREE__namespace.Clock(),
++      clock: new FiberTimer(),
+       pointer,
+       mouse: pointer,
+       frameloop: 'always',
+@@ -15893,6 +15946,7 @@ function unmountComponentAtNode(canvas, callback) {
+         setTimeout(() => {
+           try {
+             var _state$gl, _state$gl$renderLists, _state$gl2, _state$gl3;
++            state.clock.dispose == null ? void 0 : state.clock.dispose();
+             state.events.disconnect == null ? void 0 : state.events.disconnect();
+             (_state$gl = state.gl) == null ? void 0 : (_state$gl$renderLists = _state$gl.renderLists) == null ? void 0 : _state$gl$renderLists.dispose == null ? void 0 : _state$gl$renderLists.dispose();
+             (_state$gl2 = state.gl) == null ? void 0 : _state$gl2.forceContextLoss == null ? void 0 : _state$gl2.forceContextLoss();
+@@ -16065,6 +16119,7 @@ let subscribers;
+ let subscription;
+ function update(timestamp, state, frame) {
+   // Run local effects
++  state.clock.update(timestamp);
+   let delta = state.clock.getDelta();
+ 
+   // In frameloop='never' mode, clock times are updated using the provided timestamp
+diff --git a/node_modules/@react-three/fiber/dist/events-583399dd.cjs.prod.js b/node_modules/@react-three/fiber/dist/events-583399dd.cjs.prod.js
+index 3376d70..5cac19a 100644
+--- a/node_modules/@react-three/fiber/dist/events-583399dd.cjs.prod.js
++++ b/node_modules/@react-three/fiber/dist/events-583399dd.cjs.prod.js
+@@ -970,6 +970,59 @@ function createEvents(store) {
+ 
+ const isRenderer = def => !!(def != null && def.render);
+ const context = /* @__PURE__ */React__namespace.createContext(null);
++class FiberTimer extends THREE__namespace.Timer {
++  constructor() {
++    super();
++    this.autoStart = true;
++    this.elapsedTime = 0;
++    this.oldTime = 0;
++    this.startTime = performance.now();
++    this.running = false;
++    this.firstFrame = true;
++    if (typeof document !== 'undefined') this.connect(document);
++  }
++  update(timestamp) {
++    if (this.firstFrame) {
++      const time = timestamp - this._startTime;
++      this._currentTime = time;
++      this._previousTime = time;
++      this._delta = 0;
++      this._elapsed = 0;
++      this.firstFrame = false;
++    } else {
++      super.update(timestamp);
++    }
++    this.elapsedTime = this.getElapsed();
++    this.oldTime = timestamp;
++    return this;
++  }
++  getDelta() {
++    if (this.autoStart && !this.running) {
++      this.start();
++      return 0;
++    }
++    return this.running ? super.getDelta() : 0;
++  }
++  getElapsedTime() {
++    return this.elapsedTime;
++  }
++  start() {
++    this.reset();
++    this._previousTime = this._currentTime;
++    this._delta = 0;
++    this._elapsed = 0;
++    this.elapsedTime = 0;
++    this.oldTime = performance.now();
++    this.startTime = this.oldTime;
++    this.running = true;
++    this.autoStart = true;
++    this.firstFrame = false;
++  }
++  stop() {
++    this.running = false;
++    this.autoStart = false;
++  }
++}
+ const createStore = (invalidate, advance) => {
+   const rootStore = traditional.createWithEqualityFn((set, get) => {
+     const position = new THREE__namespace.Vector3();
+@@ -1038,7 +1091,7 @@ const createStore = (invalidate, advance) => {
+       linear: false,
+       flat: false,
+       controls: null,
+-      clock: new THREE__namespace.Clock(),
++      clock: new FiberTimer(),
+       pointer,
+       mouse: pointer,
+       frameloop: 'always',
+@@ -7696,6 +7749,7 @@ function unmountComponentAtNode(canvas, callback) {
+         setTimeout(() => {
+           try {
+             var _state$gl, _state$gl$renderLists, _state$gl2, _state$gl3;
++            state.clock.dispose == null ? void 0 : state.clock.dispose();
+             state.events.disconnect == null ? void 0 : state.events.disconnect();
+             (_state$gl = state.gl) == null ? void 0 : (_state$gl$renderLists = _state$gl.renderLists) == null ? void 0 : _state$gl$renderLists.dispose == null ? void 0 : _state$gl$renderLists.dispose();
+             (_state$gl2 = state.gl) == null ? void 0 : _state$gl2.forceContextLoss == null ? void 0 : _state$gl2.forceContextLoss();
+@@ -7868,6 +7922,7 @@ let subscribers;
+ let subscription;
+ function update(timestamp, state, frame) {
+   // Run local effects
++  state.clock.update(timestamp);
+   let delta = state.clock.getDelta();
+ 
+   // In frameloop='never' mode, clock times are updated using the provided timestamp
