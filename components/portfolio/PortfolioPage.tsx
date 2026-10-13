@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { identity, internships, projectSystems, TIMELINE } from '@/lib/content'
 import { getFeaturedProjects, getProjectById } from '@/lib/projects'
 import SiteHeader from './SiteHeader'
+import ConstellationNav from './ConstellationNav'
 
 const featuredProjects = getFeaturedProjects().flatMap(record => {
   const system = projectSystems.find(project => project.id === record.id)
@@ -76,6 +77,7 @@ export default function PortfolioPage() {
   return (
     <>
       <SiteHeader />
+      <ConstellationNav />
 
       <main id="main-content">
         <section className="hero page-wrap" id="home" aria-labelledby="hero-title">
@@ -95,7 +97,7 @@ export default function PortfolioPage() {
             <div className="art-orbit art-orbit-two" />
             <div className="art-core"><code><span>const</span> build =<br />() =&gt; <span>&quot;B&quot;</span>;</code></div>
             <span className="hero-letter-fallback">B</span>
-            <span className="art-caption">A system is more<br />than its parts.</span>
+            <span className="art-caption">A system is art<br />more than its parts.</span>
             <span className="art-coordinate">01 / 06</span>
           </div>
           <a className="scroll-cue" href="#work"><span>Scroll to explore</span><ArrowDownRight aria-hidden="true" size={15} /></a>

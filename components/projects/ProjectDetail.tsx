@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from 'lucide-react'
 import type { Project } from '@/types/project'
+import ProjectPreview from './ProjectPreview'
 
 function DetailSection({ title, items }: { title: string; items: string[] }) {
   if (!items.length) return null
@@ -18,12 +19,17 @@ export default function ProjectDetail({ project, allProjects }: { project: Proje
         <Link href="/">Home</Link><span aria-hidden="true">/</span><Link href="/projects">Projects</Link><span aria-hidden="true">/</span><span aria-current="page">{project.title}</span>
       </nav>
       <header className="project-detail-header">
+        <div className="project-detail-hero">
+          <div className="project-detail-copy">
         <p className="eyebrow"><span>{project.category}</span>{project.status && <><i aria-hidden="true">·</i>{project.status.replace('-', ' ')}</>}</p>
         <h1>{project.title}</h1>
         <p className="project-detail-lede">{project.summary}</p>
         <div className="project-detail-actions">
           {project.repositoryUrl && <a className="button button-primary" href={project.repositoryUrl} target="_blank" rel="noreferrer">View repository <ExternalLink aria-hidden="true" size={16} /></a>}
           {project.liveUrl && <a className="text-link" href={project.liveUrl} target="_blank" rel="noreferrer">Open live project <ArrowUpRight aria-hidden="true" size={15} /></a>}
+        </div>
+          </div>
+          <ProjectPreview title={project.title} />
         </div>
       </header>
 
