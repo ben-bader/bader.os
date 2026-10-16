@@ -9,6 +9,13 @@ const project: Project = {
   highlights: ['Seven portfolio layers organize projects, skills, and experience.', 'Architecture diagrams and technology maps connect tools and projects.'],
   features: ['Interactive engineering portfolio.', 'Project system maps.', 'Technology knowledge graph.', 'Experience timeline.'],
   architecture: ['Next.js App Router with React Server Components.', 'Three.js via React Three Fiber, GSAP animation, and D3 visualizations.'],
+  implementation: [
+    { technology: 'Next.js and React', detail: 'The App Router serves the portfolio and project routes; React components compose its sections and visualizations.' },
+    { technology: 'TypeScript', detail: 'Types the project catalog, route data, and interactive components.' },
+    { technology: 'Three.js with React Three Fiber', detail: 'Drives the interactive 3D hero canvas and its shader-based letterform.' },
+    { technology: 'GSAP', detail: 'Coordinates scroll-linked and interface motion in the experience runtime.' },
+    { technology: 'D3', detail: 'Supports the interactive technology knowledge graph.' },
+  ],
   images: [],
 }
 export default project

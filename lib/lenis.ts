@@ -1,6 +1,6 @@
 /**
  * Global Lenis singleton.
- * SystemOS sets this once on init; any component can call scrollTo().
+ * ExperienceRuntime sets this once on init; any component can call scrollTo().
  */
 
 type LenisInstance = {
@@ -23,15 +23,3 @@ export function getLenis(): LenisInstance | null {
  * Scroll to an element by DOM id.
  * Falls back to native scrollIntoView if Lenis isn't ready.
  */
-export function scrollToId(id: string, offset = 0) {
-  const el = document.getElementById(id)
-  if (!el) return
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    el.scrollIntoView({ behavior: 'instant' })
-  } else if (_lenis) {
-    _lenis.scrollTo(el, { offset, duration: 1.4, easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) })
-  } else {
-    el.scrollIntoView({ behavior: 'smooth' })
-  }
-}

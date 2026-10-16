@@ -4,7 +4,7 @@
 
 Software should feel tangible and open to exploration. The portfolio uses a dark, spatial editorial language: midnight ink surfaces, mist colored type, precise rules, a controlled electric lime signal, and one procedural glass loop in a shared WebGL scene. The loop suggests connected layers in a system; it is an atmospheric object, not a logo or a diagram of a specific project.
 
-The page makes Bader's identity and selected work easy to find first, then gives visitors a clear route through background, demonstrated tools, education, internships, and contact. Project maps are generated from the nodes and edges in `lib/content.ts`. They communicate documented relationships and do not stand in for product screenshots.
+The page makes Bader's identity and selected work easy to find first, then gives visitors a clear route through background, demonstrated tools, education, internships, and contact. Project maps use nodes and edges from `lib/project-architecture.ts`, keyed to canonical project records. They communicate documented relationships and do not stand in for product screenshots.
 
 ## Visitor sequence
 

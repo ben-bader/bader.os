@@ -3,13 +3,20 @@ import type { Project } from '@/types/project'
 const project: Project = {
   id: 'onee-sys', title: 'ONEE-SYS', category: 'Inventory management',
   summary: 'A Laravel application for recording equipment, peripherals, brands, employees, and sites.',
-  description: 'An internal inventory management application for tracking equipment, peripherals, brands, employees, and sites, built with Laravel, Blade, and SQLite.',
+  description: 'An internal inventory application for recording devices and peripherals alongside their brands, categories, assigned employees, and sites. Laravel serves the application, Blade renders its pages, and SQLite stores its records.',
   technologies: ['Laravel', 'PHP', 'Blade', 'SQLite', 'Vite'], repositoryUrl: 'https://github.com/ben-bader/ONEE-SYS',
+  status: 'completed', period: '2025',
   featured: true,
-  highlights: ['Inventory records connect equipment with brands, employees, and sites.', 'Built as an internal tool for ONEE - Branche Eau.'],
-  features: ['Manage devices and peripherals.', 'Track brands and categories.', 'Assign equipment to employees and sites.', 'Search and paginate inventory records.'],
-  architecture: ['Laravel MVC application using Blade views and SQLite.', 'Vite builds frontend assets.'],
+  highlights: ['Equipment records relate to brands, categories, employees, and sites.', 'Delivered as an internal tool during an internship at ONEE - Branche Eau.'],
+  features: ['Create, edit, and remove inventory records.', 'Manage brands, categories, employees, and sites.', 'Search and paginate inventory listings.'],
+  architecture: ['Laravel MVC application with Blade views and SQLite storage.', 'Vite bundles the frontend assets used by the Blade interface.'],
+  implementation: [
+    { technology: 'Laravel / PHP', detail: 'The MVC application handles inventory workflows and related records; the internship role included CRUD work.' },
+    { technology: 'Blade', detail: 'Renders the server-side application views for the inventory interface.' },
+    { technology: 'SQLite', detail: 'Stores the inventory and related record data through the application database.' },
+    { technology: 'Vite', detail: 'Bundles frontend assets for the Blade-based application.' },
+  ],
   role: 'Worked with the engineering team on Laravel MVC, CRUD operations, and the first production release during an internship at ONEE - Branche Eau.',
-  images: [],
+  images: [{ src: '/images/projects/onee-sys/image.png', alt: 'ONEE digital platform landing page' }],
 }
 export default project

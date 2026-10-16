@@ -1,5 +1,3 @@
-import { projectFocusBus } from './ProjectFocusBus'
-
 export type PortfolioSection =
   | 'home'
   | 'work'
@@ -80,7 +78,6 @@ export const scrollBus = {
   update(scrollTop: number, viewportHeight: number, deltaSeconds: number, section: PortfolioSection) {
     const limit = Math.max(0, document.documentElement.scrollHeight - viewportHeight)
     const delta = scrollTop - previousTop
-    if (delta !== 0) projectFocusBus.shiftRect(-delta)
     const rawVelocity = deltaSeconds > 0 ? delta / deltaSeconds : 0
     const attack = 1 - Math.exp(-deltaSeconds * 18)
     smoothedVelocity += (rawVelocity - smoothedVelocity) * attack

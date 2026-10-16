@@ -6,7 +6,7 @@ bader.os presents verified software work with clear engineering context. It shou
 
 ## Content integrity
 
-- Keep project facts, status, technologies, responsibilities, and dates tied to `lib/content.ts`.
+- Keep project facts, status, technologies, responsibilities, links, and images in `data/projects/*.ts`; keep architecture topology in `lib/project-architecture.ts`.
 - Do not invent business outcomes, project links, AI work, uptime, performance scores, screenshots, or methods.
 - Mark planned or pending architecture components as such.
 - Separate project inventory counts from measured product outcomes.

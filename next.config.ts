@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
-    optimizePackageImports: ['lucide-react', 'd3'],
+    optimizePackageImports: ['lucide-react'],
   },
 
   async headers() {

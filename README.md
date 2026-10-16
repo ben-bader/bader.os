@@ -2,34 +2,33 @@
 
 A software engineering portfolio for Bader Bennani, computer engineering student at EILCO in Calais, France.
 
-## Page structure
+## Routes
 
-| Section | Content |
-|---|---|
-| Home | Identity, focus, selected actions |
-| Selected work | AtlasHR and ONEE-SYS, followed by Innovex and Homely |
-| About | Studies, location, languages, and engineering interests |
-| Capabilities | Technologies grouped by the work they support |
-| Journey | Education and internship chronology |
-| Contact | Email, GitHub, LinkedIn, and résumé |
+- `/` presents the portfolio, selected project work, background, capabilities, journey, and contact details.
+- `/projects` lists the project catalog.
+- `/projects/[id]` renders statically generated project details from the same catalog.
+- `app/not-found.tsx`, `app/loading.tsx`, `app/robots.ts`, `app/sitemap.ts`, and `app/icon.svg` provide App Router conventions and metadata routes.
 
-## Implementation
+## Architecture
 
-- Next.js App Router; the page and project information are server rendered.
-- A small Client Component tracks the current section for the sticky navigation.
-- The shared React Three Fiber canvas contains a procedural glass loop and can bring a selected project's documented architecture into focus.
-- GSAP and ScrollTrigger animate section headings and project focus. R3F advances Lenis and reads the shared pointer and scroll state.
-- Native anchors, project disclosures, focus styles, reduced-motion behavior, and a CSS fallback keep the content accessible when effects are unavailable.
-- Midnight ink, mist, electric lime, a native system sans stack, and restrained system monospace are documented in `docs/design-tokens.md`.
+- `data/projects/*.ts` is the canonical source for project titles, descriptions, technologies, status, links, images, features, and contributions.
+- `lib/project-architecture.ts` contains only node-and-edge topology used by the homepage system maps and the 3D project focus scene. The catalog validates graph project IDs and edge endpoints.
+- `lib/content.ts` holds identity, education, internship, and chronology content. It still contains the older `projectSystems` dataset for unrouted legacy source; active homepage and canvas components use the canonical catalog plus `lib/project-architecture.ts`.
+- Homepage sections are server-rendered modules under `components/portfolio/sections/`. `ConstellationNav` owns client-side active-section behavior.
+- `ExperienceRuntime` capability-checks in a client effect and loads the R3F canvas and GSAP orchestrator. The canvas includes the procedural 3D B, project focus, and Lenis frame bridge.
+- Tailwind CSS 4 is configured through `@tailwindcss/postcss` and `@import "tailwindcss"` in `app/globals.css`. The CSS-first `@theme inline` block maps semantic utilities to the existing CSS variables.
 
-## Content and assets
+## Project media
 
-Project, education, internship, and technology facts live in `lib/content.ts`. Project relationship diagrams use the source nodes and edges. There are no project screenshots in `public/images/projects/`, so the portfolio uses original diagrams instead of invented product imagery.
+Project images are stored at the paths declared in each record's `images` array. Current media includes `public/images/projects/<slug>/image.png` and a small set of existing `/projects/*.png` assets. Projects without an image use the built-in preview placeholder. See `public/images/projects/README.md` before adding or replacing screenshots.
 
-## Local development
+## Local checks
 
 ```sh
 npm run dev
 npm run lint
+npx tsc --noEmit --incremental false
 npm run build
 ```
+
+There is no test script or test framework configured in `package.json`.

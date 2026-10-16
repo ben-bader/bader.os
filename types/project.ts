@@ -1,4 +1,4 @@
-export type ProjectStatus = 'prototype' | 'in-progress'
+export type ProjectStatus = 'prototype' | 'in-progress' | 'completed'
 
 export interface Project {
   id: string
@@ -11,10 +11,12 @@ export interface Project {
   liveUrl?: string | null
   documentationUrl?: string | null
   status?: ProjectStatus
+  period?: string
   featured: boolean
   highlights: string[]
   features: string[]
   architecture?: string[]
+  implementation?: { technology: string; detail: string }[]
   challenges?: string[]
   learnings?: string[]
   role?: string

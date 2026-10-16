@@ -131,7 +131,7 @@ export const knowledgeNodes: KnowledgeNode[] = [
     connections: ['laravel', 'sqlite', 'mysql'],
     projects: ['onee-sys', 'homely'], since: 2025, color: '#777bb4' },
   { id: 'javascript', label: 'JavaScript',  category: 'language',  weight: 8,
-    connections: ['react', 'typescript', 'nodejs'],
+    connections: ['react', 'typescript'],
     projects: ['innovex', 'homely','atlashr'], since: 2024, color: '#f7df1e' },
   { id: 'python',     label: 'Python',      category: 'language',  weight: 4,
     connections: [],
@@ -158,7 +158,7 @@ export const knowledgeNodes: KnowledgeNode[] = [
     projects: ['onee-sys'], since: 2025, color: '#ff2d20' },
   { id: 'tailwind',   label: 'Tailwind CSS',category: 'tool',      weight: 7,
     connections: ['react', 'nextjs'],
-    projects: ['atlashr', 'innovex','homley','onee-sys'], since: 2024, color: '#38bdf8' },
+    projects: ['atlashr', 'innovex', 'homely', 'onee-sys'], since: 2024, color: '#38bdf8' },
 
   // ── Databases ──────────────────────────────────────────────────────
   { id: 'postgresql', label: 'PostgreSQL',  category: 'database',  weight: 9,

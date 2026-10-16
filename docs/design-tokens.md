@@ -1,37 +1,39 @@
 # Design tokens
 
-`app/globals.css` is the source of truth. Reuse semantic variables before adding repeated colors or spacing values.
+`app/globals.css` remains the single source of truth. Tailwind CSS 4's `@theme inline` block maps its CSS custom properties into utility namespaces without copying their values into a second token file.
 
 ## Color
 
-| Token | Value | Use |
+| CSS variable | Value | Purpose |
 |---|---|---|
 | `--background` | `#101315` | Main page and WebGL background |
-| `--background-soft` | `#151A1C` | Alternate section |
-| `--surface` | `#1B2223` | Elevated content |
+| `--background-soft` | `#151a1c` | Alternate surface |
+| `--surface` | `#1b2223` | Elevated content |
 | `--surface-raised` | `#202827` | Highest DOM surface |
-| `--foreground` | `#F0F3EE` | Main text |
-| `--foreground-secondary` | `#C0C8C1` | Supporting text |
-| `--muted` | `#A3AEA7` | Nonessential annotation |
-| `--border` | `rgba(235, 242, 234, .14)` | Structural rules |
-| `--border-strong` | `rgba(235, 242, 234, .26)` | Stronger section separators |
-| `--accent` | `#C6F36B` | Actions, active section, and material edge |
-| `--accent-hover` | `#D7FF83` | Hover and focus emphasis |
+| `--surface-catalog` | `rgba(16, 19, 21, .94)` | Project archive card surface |
+| `--foreground` | `#f0f3ee` | Primary text |
+| `--foreground-secondary` | `#c0c8c1` | Supporting text |
+| `--muted` | `#a3aea7` | Supporting annotation |
+| `--border` | `rgba(235, 242, 234, .14)` | Fine borders |
+| `--border-strong` | `rgba(235, 242, 234, .26)` | Emphasized separators |
+| `--accent` | `#c6f36b` | Actions and active emphasis |
+| `--accent-hover` | `#d7ff83` | Interactive hover state |
 | `--accent-ink` | `#182010` | Text on accent surfaces |
-| `--success` | `#B6D38F` | Success state where applicable |
+| `--success` | `#b6d38f` | Success state |
 
-WebGL material values are specified in `components/experience/HeroMaterial.ts`. They use related, physically lit green and mist tones rather than direct DOM colors.
+Utilities use aliases such as `bg-background`, `text-copy-secondary`, `border-border-strong`, and `text-accent`.
 
-## Type and layout
+## Typography and layout
 
-- `--font-display`: native system sans stack for fast, offline-safe rendering.
-- `--font-code`: system monospace for short technical labels only.
-- Body copy remains 16px or larger; technical annotations are supporting content.
-- Spacing uses a 4px base (`--space-1` through `--space-24`).
-- Page width is 1520px; gutters use `clamp()` and contract for mobile.
+- `--font-display` resolves to the existing Manrope `next/font` variable.
+- `--font-body` resolves to the existing Poppins `next/font` variable.
+- `--font-code` is the system monospace stack for technical annotations.
+- Tailwind aliases use distinct `font-portfolio-*` names to avoid redefining the source variables.
+- The spacing scale maps the existing `.25rem` through `6rem` values. `--page-width` is 1520px and `--page-gutter` uses the existing clamp expression.
 
-## Shape and motion
+## Shape, layering, and motion
 
-- Favor square surfaces, fine borders, and restrained shadows.
-- Use `--motion-fast` (160ms), `--motion-normal` (260ms), and `--ease` for small interface transitions.
-- Keep scroll animation optional. The reduced-motion media query disables continuous CSS motion and smooth scrolling; the runtime skips WebGL and GSAP under reduced motion.
+- Sharp control and panel radius aliases are 3px and 4px, drawn from existing interface rules.
+- Canvas/content/header/navigation/skip-link z-index aliases preserve the current values 0, 1, 40, 45, and 1000.
+- `--shadow`, `--ease`, `--motion-fast` (160ms), and `--motion-normal` (260ms) remain canonical CSS variables.
+- Focus outlines and reduced-motion rules stay in global CSS because they are cross-route behaviors.

@@ -4,7 +4,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useFBO } from '@react-three/drei'
-import { useEffect, useMemo, useRef, useSyncExternalStore, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, type RefObject } from 'react'
 import * as THREE from 'three'
 import Lenis from 'lenis'
 import type { CapabilityLevel } from '@/lib/experience/capabilities'
@@ -12,7 +12,6 @@ import { pointerBus } from '@/lib/experience/PointerBus'
 import { projectFocusBus } from '@/lib/experience/ProjectFocusBus'
 import { scrollBus } from '@/lib/experience/ScrollBus'
 import { getLenis, setLenis } from '@/lib/lenis'
-import { projectSystems } from '@/lib/content'
 import { createEngineeringGlass, createScreenRefractionMaterial } from './HeroMaterial'
 
 const sections = ['home', 'work', 'about', 'capabilities', 'journey', 'contact'] as const
@@ -175,94 +174,6 @@ function HeroObject({ level, groupRef, refractionMaterial }: {
   )
 }
 
-function ProjectSystemVisual({ projectId }: { projectId: string }) {
-  const groupRef = useRef<THREE.Group>(null)
-  const { camera, size } = useThree()
-  const project = projectSystems.find(item => `project-${item.id}` === projectId)
-  const positions = useMemo(() => {
-    if (!project) return []
-    return project.nodes.map((_, index) => {
-      const columns = Math.min(4, project.nodes.length)
-      const rows = Math.ceil(project.nodes.length / columns)
-      const col = index % columns
-      const row = Math.floor(index / columns)
-      return new THREE.Vector3(
-        (col / Math.max(columns - 1, 1) - 0.5) * 0.82,
-        (0.5 - row / Math.max(rows - 1, 1)) * 0.58,
-        (index % 2) * 0.035,
-      )
-    })
-  }, [project])
-  const { geometry, colors } = useMemo(() => {
-    if (!project) return { geometry: new THREE.BufferGeometry(), colors: [] as THREE.Color[] }
-    const indexById = new Map(project.nodes.map((node, index) => [node.id, index]))
-    const vertices: number[] = []
-    project.edges.forEach(edge => {
-      const from = positions[indexById.get(edge.from) ?? -1]
-      const to = positions[indexById.get(edge.to) ?? -1]
-      if (from && to) vertices.push(from.x, from.y, from.z, to.x, to.y, to.z)
-    })
-    const lineGeometry = new THREE.BufferGeometry()
-    lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
-    return {
-      geometry: lineGeometry,
-      colors: project.nodes.map(node => new THREE.Color(node.status === 'pending' ? '#9C9890' : '#78A4A3')),
-    }
-  }, [project, positions])
-  const nodesRef = useRef<THREE.InstancedMesh>(null)
-  const dummy = useMemo(() => new THREE.Object3D(), [])
-
-  useEffect(() => {
-    if (!nodesRef.current) return
-    positions.forEach((position, index) => {
-      dummy.position.copy(position)
-      dummy.scale.setScalar(0.035)
-      dummy.updateMatrix()
-      nodesRef.current!.setMatrixAt(index, dummy.matrix)
-      nodesRef.current!.setColorAt(index, colors[index])
-    })
-    nodesRef.current.instanceMatrix.needsUpdate = true
-    if (nodesRef.current.instanceColor) nodesRef.current.instanceColor.needsUpdate = true
-  }, [colors, dummy, positions])
-
-  useFrame(() => {
-    const rect = projectFocusBus.getSnapshot().rect
-    const reveal = projectFocusBus.getSnapshot().progress
-    if (!groupRef.current || !rect || !('fov' in camera)) return
-    const perspectiveCamera = camera as THREE.PerspectiveCamera
-    const distance = Math.max(0.1, perspectiveCamera.position.z + 0.65)
-    const worldHeight = 2 * Math.tan(THREE.MathUtils.degToRad(perspectiveCamera.fov / 2)) * distance
-    const worldWidth = worldHeight * (size.width / Math.max(size.height, 1))
-    const centerX = rect.x + rect.width / 2
-    const centerY = rect.y + rect.height / 2
-    groupRef.current.position.set(
-      perspectiveCamera.position.x + (centerX / size.width - 0.5) * worldWidth,
-      perspectiveCamera.position.y + (0.5 - centerY / size.height) * worldHeight,
-      perspectiveCamera.position.z - distance,
-    )
-    groupRef.current.scale.set(
-      (rect.width / size.width) * worldWidth * reveal,
-      (rect.height / size.height) * worldHeight * reveal,
-      1,
-    )
-  })
-
-  useEffect(() => () => geometry.dispose(), [geometry])
-  if (!project) return null
-
-  return (
-    <group ref={groupRef}>
-    <lineSegments geometry={geometry}>
-        <lineBasicMaterial color="#A7C78D" transparent opacity={0.32} />
-      </lineSegments>
-      <instancedMesh ref={nodesRef} args={[undefined, undefined, project.nodes.length]}>
-        <icosahedronGeometry args={[1, 1]} />
-        <meshStandardMaterial roughness={0.32} metalness={0.24} transparent opacity={0.68} />
-      </instancedMesh>
-    </group>
-  )
-}
-
 function ExperienceScene({ level }: { level: CapabilityLevel }) {
   const { viewport, size, camera } = useThree()
   const background = useMemo(() => new THREE.Color('#101315'), [])
@@ -277,12 +188,6 @@ function ExperienceScene({ level }: { level: CapabilityLevel }) {
   )
   const drawingSize = useMemo(() => new THREE.Vector2(), [])
   const cameraAim = useMemo(() => new THREE.Vector3(), [])
-  const focusedProject = useSyncExternalStore(
-    projectFocusBus.subscribe,
-    () => projectFocusBus.getSnapshot().id,
-    () => null,
-  )
-
   useFrame((_, delta) => {
     const sectionIndex = sections.indexOf(scrollBus.getSnapshot().section)
     const cameraStates = [
@@ -332,7 +237,6 @@ function ExperienceScene({ level }: { level: CapabilityLevel }) {
       <group scale={fitScale}>
         <HeroObject level={level} groupRef={heroRef} refractionMaterial={refractionMaterial} />
       </group>
-      {focusedProject && <ProjectSystemVisual projectId={focusedProject} />}
     </>
   )
 }

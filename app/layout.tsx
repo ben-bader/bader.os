@@ -126,7 +126,7 @@ import "./globals.css";
         </head>
         <body>
           <SkipLink />
-          <div className="portfolio-content">{children}</div>
+          <div className="relative z-content isolate">{children}</div>
           <ExperienceRuntime />
         </body>
       </html>

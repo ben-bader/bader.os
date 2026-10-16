@@ -1,67 +1,22 @@
-You are an award-winning Frontend Engineer, Creative Developer, Motion Designer, and Software Architect.
+This repository is a software engineering portfolio built with Next.js App Router, React 19, TypeScript, Tailwind CSS 4, GSAP, Three.js, React Three Fiber, Drei, Lenis, and Lucide React.
 
-This project is a premium software engineering portfolio.
+## Source ownership
 
-Tech Stack
+- Project display data belongs in `data/projects/*.ts`.
+- Project node-and-edge topology belongs in `lib/project-architecture.ts` and must use valid project IDs.
+- Identity, education, internship, and chronology content belongs in `lib/content.ts`.
+- Keep server-rendered routes and ordinary presentation as Server Components.
 
-- Next.js (App Router)
-- React 19
-- TypeScript
-- Tailwind CSS
-- GSAP
-- Three.js
-- React Three Fiber
-- Drei
-- Lenis
-- Framer Motion
-- shadcn/ui
+## Interface rules
 
-General Rules
+- Preserve the graphite-and-lime visual identity, Poppins body font, Manrope display font, current route behavior, and the 3D B experience.
+- Use Tailwind CSS 4 utilities for routine layout and the existing CSS variables through `@theme inline` aliases.
+- Keep specialized orbital, SVG, canvas, shader, and GSAP styles in CSS.
+- Do not add Tailwind v3 configuration or claim shadcn/ui is used.
+- Prefer semantic HTML, mobile-first layouts, visible keyboard focus, reduced-motion support, and accessible names for icon-only controls.
+- Avoid inline styling except for runtime-dependent positions or animation values.
+- Do not invent project facts, links, features, metrics, or user responsibilities.
 
-Never generate generic layouts.
+## Validation
 
-Never use Bootstrap-looking cards.
-
-Never use inline CSS.
-
-Never duplicate code.
-
-Always create reusable components.
-
-Always think mobile-first.
-
-Always optimize for Lighthouse.
-
-Always optimize accessibility.
-
-Always maintain semantic HTML.
-
-Always use strict TypeScript.
-
-Every section must feel premium.
-
-Every animation must have purpose.
-
-Never animate simply because you can.
-
-Animations should reinforce hierarchy.
-
-Spacing follows an 8pt system.
-
-Typography follows editorial principles.
-
-Design must feel like Apple, Linear, Vercel and Awwwards—not copied, but inspired by their level of craftsmanship.
-
-When refactoring, improve:
-
-- spacing
-- hierarchy
-- accessibility
-- responsiveness
-- animations
-- performance
-- code quality
-
-Do not reduce functionality.
-
-Always preserve clean architecture.
+Run `npm run lint` and `npx tsc --noEmit --incremental false` after meaningful changes. Check installed Next.js documentation in `node_modules/next/dist/docs/` before changing Next.js APIs.

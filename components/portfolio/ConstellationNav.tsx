@@ -24,9 +24,9 @@ export default function ConstellationNav() {
   const activeSection = portfolioSections.find(section => section.id === activeId) ?? portfolioSections[0]
 
   return (
-    <nav className="constellation-nav" aria-label="Portfolio sections">
-      <div className="constellation-map">
-        <svg className="constellation-lines" viewBox="0 0 148 160" aria-hidden="true">
+    <nav className="fixed right-[max(14px,env(safe-area-inset-right))] top-1/2 z-navigation w-40 -translate-y-1/2 text-center max-mobile:top-auto max-mobile:right-[max(4px,env(safe-area-inset-right))] max-mobile:bottom-[max(10px,env(safe-area-inset-bottom))] max-mobile:translate-y-0" aria-label="Portfolio sections">
+      <div className="relative mx-auto h-40 w-[148px]">
+        <svg className="constellation-lines pointer-events-none absolute inset-0 size-full overflow-visible" viewBox="0 0 148 160" aria-hidden="true">
           {connections.map(([from, to]) => (
             <line
               key={`${from}-${to}`}
@@ -42,7 +42,7 @@ export default function ConstellationNav() {
           const active = section.id === activeId
           return (
             <a
-              className={`constellation-star constellation-star-${section.id}`}
+              className="group constellation-star absolute z-content grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[#89968a] no-underline [touch-action:manipulation] transition-[color,filter] duration-[180ms] hover:text-[#e4f1d1] hover:[filter:drop-shadow(0_0_5px_rgba(198,243,107,.4))] focus-visible:text-[#e4f1d1] focus-visible:[filter:drop-shadow(0_0_5px_rgba(198,243,107,.4))] aria-[current=location]:text-accent aria-[current=location]:[filter:drop-shadow(0_0_7px_rgba(198,243,107,.58))]"
               key={section.id}
               href={`#${section.id}`}
               aria-label={`${section.label} section`}
@@ -51,15 +51,15 @@ export default function ConstellationNav() {
               style={{ left: point.x, top: point.y }}
               onClick={() => selectSection(section.id)}
             >
-              <svg viewBox="0 0 16 16" aria-hidden="true">
+              <svg className="size-[11px] overflow-visible fill-current transition-transform duration-[180ms] group-hover:scale-[1.2] group-focus-visible:scale-[1.2]" viewBox="0 0 16 16" aria-hidden="true">
                 <path d="M8 0.8 9.75 6.25 15.2 8l-5.45 1.75L8 15.2l-1.75-5.45L.8 8l5.45-1.75L8 .8Z" />
               </svg>
             </a>
           )
         })}
       </div>
-      <span className="constellation-current">
-        <span key={activeSection.id}>{activeSection.label}</span>
+      <span className="mt-1 block min-h-6 font-portfolio-body text-copy-secondary text-[.68rem] font-medium tracking-[.14em] leading-6 uppercase">
+        <span className="inline-block animate-[constellation-label-in_180ms_ease_both]" key={activeSection.id}>{activeSection.label}</span>
       </span>
     </nav>
   )

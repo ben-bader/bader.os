@@ -1,9 +1,11 @@
 import type { Project } from '@/types/project'
+import { assertProjectArchitectureReferences } from '@/lib/project-architecture'
 
 import anime from './anime'
 import atlashr from './atlashr'
 import baderOs from './bader-os'
 import bankModernApp from './bank-modern-app'
+import filmApp from './film-app'
 
 import gpt3 from './gpt-3'
 import homely from './homely'
@@ -16,11 +18,12 @@ import zentry from './zentry'
 // Stable catalog order: featured internship work first, then by project name.
 export const projects: Project[] = [
   atlashr, oneeSys, anime, baderOs, bankModernApp,
-  gpt3, homely, innovex, modernForm, nike, zentry,
+  gpt3, homely, innovex, filmApp, modernForm, nike, zentry,
 ]
 
 const ids = new Set(projects.map(project => project.id))
 if (ids.size !== projects.length) throw new Error('Project catalog contains duplicate IDs.')
+assertProjectArchitectureReferences(ids)
 if (projects.some(project => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(project.id))) {
   throw new Error('Project catalog IDs must be URL-safe slugs.')
 }

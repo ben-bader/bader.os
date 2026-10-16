@@ -1,302 +1,346 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { knowledgeNodes, type KnowledgeNode } from '@/lib/content'
 
-interface NodePos extends KnowledgeNode {
-  x: number
-  y: number
-  vx: number
-  vy: number
+type Point = { x: number; y: number }
+type GraphEdge = { id: string; from: string; to: string; color: string; index: number }
+
+const CATEGORY_TONES: Record<KnowledgeNode['category'], string> = {
+  language: '#c6f36b',
+  framework: '#a9c5b4',
+  database: '#8cb6ac',
+  devops: '#bac4bd',
+  concept: '#b2a6c4',
+  tool: '#d0dacd',
 }
 
-interface ActiveInfo {
-  node:      KnowledgeNode
-  connected: string[]
+const PROJECT_NAMES: Record<string, string> = {
+  atlashr: 'AtlasHR',
+  'onee-sys': 'ONEE-SYS',
+  homely: 'Homely',
+  innovex: 'Innovex',
 }
 
-const CATEGORY_COLOR: Record<string, string> = {
-  language:  '#f6ad55',
-  framework: '#63b3ed',
-  database:  '#9f7aea',
-  devops:    '#68d391',
-  concept:   '#fc8181',
-  tool:      '#76e4f7',
+// Fixed normalized coordinates preserve the composition at every size.
+const DESKTOP_LAYOUT: Record<string, Point> = {
+  javascript: { x: 0.09, y: 0.43 }, python: { x: 0.08, y: 0.73 }, c: { x: 0.15, y: 0.9 },
+  typescript: { x: 0.3, y: 0.33 }, java: { x: 0.27, y: 0.59 }, php: { x: 0.28, y: 0.82 }, sql: { x: 0.45, y: 0.88 },
+  react: { x: 0.43, y: 0.19 }, nextjs: { x: 0.56, y: 0.28 }, springboot: { x: 0.43, y: 0.57 },
+  laravel: { x: 0.48, y: 0.77 }, tailwind: { x: 0.59, y: 0.44 },
+  postgresql: { x: 0.66, y: 0.61 }, mysql: { x: 0.71, y: 0.81 }, sqlite: { x: 0.86, y: 0.8 },
+  mongodb: { x: 0.81, y: 0.13 }, oracle: { x: 0.79, y: 0.3 }, prisma: { x: 0.7, y: 0.2 },
+  docker: { x: 0.84, y: 0.57 }, rabbitmq: { x: 0.91, y: 0.43 }, jwt: { x: 0.59, y: 0.74 },
+  vercel: { x: 0.94, y: 0.15 }, git: { x: 0.92, y: 0.91 }, rest: { x: 0.67, y: 0.91 },
+}
+
+const categoryOrder: KnowledgeNode['category'][] = ['language', 'framework', 'database', 'devops', 'concept', 'tool']
+const categoryRank = new Map(categoryOrder.map((category, index) => [category, index]))
+const nodeIds = new Set(knowledgeNodes.map(node => node.id))
+const safeNodes = knowledgeNodes.map(node => ({
+  ...node,
+  connections: [...new Set(node.connections.filter(id => nodeIds.has(id)))],
+}))
+const nodeById = new Map(safeNodes.map(node => [node.id, node]))
+
+const edgeMap = new Map<string, Omit<GraphEdge, 'index'>>()
+for (const node of safeNodes) {
+  for (const targetId of node.connections) {
+    const target = nodeById.get(targetId)
+    if (!target || target.id === node.id) continue
+    const [from, to] = [node.id, target.id].sort()
+    const id = `${from}:${to}`
+    const fromNode = nodeById.get(from)!
+    const toNode = nodeById.get(to)!
+    const colorOwner = (categoryRank.get(fromNode.category) ?? 0) <= (categoryRank.get(toNode.category) ?? 0)
+      ? fromNode
+      : toNode
+    edgeMap.set(id, { id, from, to, color: CATEGORY_TONES[colorOwner.category] })
+  }
+}
+const edges: GraphEdge[] = [...edgeMap.values()]
+  .sort((a, b) => a.id.localeCompare(b.id))
+  .map((edge, index) => ({ ...edge, index }))
+
+const neighborsById = new Map(safeNodes.map(node => [node.id, new Set<string>()]))
+for (const edge of edges) {
+  neighborsById.get(edge.from)?.add(edge.to)
+  neighborsById.get(edge.to)?.add(edge.from)
+}
+const categories = [...new Set(safeNodes.map(node => node.category))]
+
+function nodePosition(nodeId: string, index: number, width: number, height: number, compact: boolean): Point {
+  if (compact) {
+    const columns = 4
+    const column = index % columns
+    const row = Math.floor(index / columns)
+    const rows = Math.ceil(safeNodes.length / columns)
+    return {
+      x: width * ((column + 0.5) / columns),
+      y: height * (0.34 + row * (0.5 / Math.max(rows - 1, 1))),
+    }
+  }
+
+  const point = DESKTOP_LAYOUT[nodeId] ?? { x: 0.5, y: 0.5 }
+  return { x: point.x * width, y: point.y * height }
+}
+
+function edgePath(from: Point, to: Point, index: number): string {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const distance = Math.hypot(dx, dy) || 1
+  const normalX = -dy / distance
+  const normalY = dx / distance
+  const side = index % 2 === 0 ? -1 : 1
+  const bend = side * Math.min(82, 22 + distance * (index % 3 === 0 ? 0.2 : 0.13))
+  const along = Math.min(0.38, 0.25 + (index % 4) * 0.025)
+  const control1 = {
+    x: from.x + dx * along + normalX * bend,
+    y: from.y + dy * along + normalY * bend,
+  }
+  const control2 = {
+    x: to.x - dx * along + normalX * bend,
+    y: to.y - dy * along + normalY * bend,
+  }
+  return `M ${from.x} ${from.y} C ${control1.x} ${control1.y}, ${control2.x} ${control2.y}, ${to.x} ${to.y}`
+}
+
+function diamondPoints(center: Point, radius: number): string {
+  return `${center.x},${center.y - radius} ${center.x + radius},${center.y} ${center.x},${center.y + radius} ${center.x - radius},${center.y}`
 }
 
 export default function KnowledgeGraph() {
-  const canvasRef  = useRef<HTMLCanvasElement>(null)
-  const nodesRef   = useRef<NodePos[]>([])
-  const mouseRef   = useRef({ x: -999, y: -999 })
-  const [active, setActive] = useState<ActiveInfo | null>(null)
-  const [size, setSize]     = useState({ w: 800, h: 560 })
+  const frameRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
+  const selectedRef = useRef<string | null>(null)
+  const hoverClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [size, setSize] = useState({ width: 1000, height: 620 })
+  const [compact, setCompact] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  // Init nodes with random positions + force-directed layout
-  const initNodes = useCallback((w: number, h: number) => {
-    const nodes: NodePos[] = knowledgeNodes.map((n) => ({
-      ...n,
-      x:  w * 0.1 + Math.random() * w * 0.8,
-      y:  h * 0.1 + Math.random() * h * 0.8,
-      vx: 0,
-      vy: 0,
-    }))
-    nodesRef.current = nodes
+  const activeNode = nodeById.get(activeId ?? '') ?? null
+  const positionById = useMemo(() => new Map(safeNodes.map((node, index) => [
+    node.id,
+    nodePosition(node.id, index, size.width, size.height, compact),
+  ])), [size, compact])
+
+  useEffect(() => {
+    const frame = frameRef.current
+    if (!frame) return
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      if (width <= 0 || height <= 0) return
+      setSize(previous => previous.width === width && previous.height === height ? previous : { width, height })
+      setCompact(width < 640)
+    })
+    resizeObserver.observe(frame)
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0 })
+    visibilityObserver.observe(frame)
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(motionQuery.matches)
+    const onMotionChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches)
+    motionQuery.addEventListener('change', onMotionChange)
+    const onVisibilityChange = () => {
+      const bounds = frame.getBoundingClientRect()
+      setVisible(!document.hidden && bounds.top < window.innerHeight && bounds.bottom > 0)
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      if (hoverClearTimerRef.current !== null) clearTimeout(hoverClearTimerRef.current)
+      resizeObserver.disconnect()
+      visibilityObserver.disconnect()
+      motionQuery.removeEventListener('change', onMotionChange)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }, [])
 
-  useEffect(() => {
-    const container = canvasRef.current?.parentElement
-    if (!container) return
-    const ro = new ResizeObserver(([entry]) => {
-      const w = entry.contentRect.width
-      const h = Math.max(480, w * 0.65)
-      setSize({ w, h })
-      if (canvasRef.current) {
-        canvasRef.current.width  = w
-        canvasRef.current.height = h
-      }
-      initNodes(w, h)
-    })
-    ro.observe(container)
-    return () => ro.disconnect()
-  }, [initNodes])
+  const selectNode = useCallback((id: string) => {
+    const next = selectedRef.current === id ? null : id
+    selectedRef.current = next
+    setSelectedId(next)
+    setActiveId(next)
+  }, [])
 
-  useEffect(() => {
-    initNodes(size.w, size.h)
-  }, [size, initNodes])
+  const clearSelection = useCallback(() => {
+    if (hoverClearTimerRef.current !== null) clearTimeout(hoverClearTimerRef.current)
+    hoverClearTimerRef.current = null
+    selectedRef.current = null
+    setSelectedId(null)
+    setActiveId(null)
+  }, [])
 
-  // Force simulation + rendering — gated by visibility
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    let animFrame: number
-    let tick = 0
-    let visible = true
-
-    // Stop rendering when not visible (saves CPU/battery)
-    const obsVis = new IntersectionObserver(
-      ([entry]) => { visible = entry.isIntersecting },
-      { threshold: 0 }
-    )
-    obsVis.observe(canvas)
-
-    const getActive = (): string | null => {
-      const mx = mouseRef.current.x
-      const my = mouseRef.current.y
-      const nodes = nodesRef.current
-      for (const n of nodes) {
-        const r = 6 + n.weight * 1.2
-        if (Math.hypot(n.x - mx, n.y - my) < r + 8) return n.id
-      }
-      return null
-    }
-
-    const draw = () => {
-      if (!visible) {
-        animFrame = requestAnimationFrame(draw)
-        return
-      }
-      tick++
-      const nodes = nodesRef.current
-      const w = canvas.width
-      const h = canvas.height
-
-      // Force simulation (lite)
-      if (tick < 300) {
-        nodes.forEach((a) => {
-          // repulsion
-          nodes.forEach((b) => {
-            if (a.id === b.id) return
-            const dx = a.x - b.x, dy = a.y - b.y
-            const d  = Math.max(Math.hypot(dx, dy), 1)
-            const f  = Math.min(600 / (d * d), 1.5)
-            a.vx += (dx / d) * f
-            a.vy += (dy / d) * f
-          })
-          // attraction to connections
-          a.connections.forEach((bid) => {
-            const b = nodes.find(n => n.id === bid)
-            if (!b) return
-            const dx = b.x - a.x, dy = b.y - a.y
-            const d  = Math.hypot(dx, dy)
-            a.vx += (dx / d) * 0.5
-            a.vy += (dy / d) * 0.5
-          })
-          // center gravity
-          a.vx += (w / 2 - a.x) * 0.001
-          a.vy += (h / 2 - a.y) * 0.001
-          // damp
-          a.vx *= 0.85
-          a.vy *= 0.85
-          a.x = Math.max(40, Math.min(w - 40, a.x + a.vx))
-          a.y = Math.max(40, Math.min(h - 40, a.y + a.vy))
-        })
-      }
-
-      // Clear
-      ctx.clearRect(0, 0, w, h)
-
-      const hoverId = getActive()
-
-      // Draw edges
-      nodes.forEach((a) => {
-        a.connections.forEach((bid) => {
-          const b = nodes.find(n => n.id === bid)
-          if (!b) return
-          const isHighlighted = hoverId === a.id || hoverId === b.id
-
-          ctx.beginPath()
-          ctx.moveTo(a.x, a.y)
-          ctx.lineTo(b.x, b.y)
-          ctx.strokeStyle = isHighlighted
-            ? CATEGORY_COLOR[a.category] + 'aa'
-            : 'rgba(255,255,255,0.04)'
-          ctx.lineWidth = isHighlighted ? 1.2 : 0.7
-
-          if (!isHighlighted) {
-            ctx.setLineDash([3, 5])
-          } else {
-            ctx.setLineDash([])
-          }
-          ctx.stroke()
-          ctx.setLineDash([])
-        })
-      })
-
-      // Draw nodes
-      nodes.forEach((n) => {
-        const r     = 4 + n.weight * 1.3
-        const color = CATEGORY_COLOR[n.category] ?? '#888'
-        const isHov = hoverId === n.id
-        const isConn= hoverId !== null && (
-          n.id === hoverId ||
-          nodesRef.current.find(a => a.id === hoverId)?.connections.includes(n.id)
-        )
-        const dim   = hoverId !== null && !isConn
-
-        // Glow
-        if (isHov) {
-          ctx.beginPath()
-          ctx.arc(n.x, n.y, r + 8, 0, Math.PI * 2)
-          const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r + 12)
-          grd.addColorStop(0,   color + '44')
-          grd.addColorStop(1,   color + '00')
-          ctx.fillStyle = grd
-          ctx.fill()
-        }
-
-        // Node circle
-        ctx.beginPath()
-        ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
-        ctx.fillStyle = isHov
-          ? color
-          : isConn
-            ? color + 'cc'
-            : dim
-              ? 'rgba(255,255,255,0.06)'
-              : color + '70'
-        ctx.fill()
-
-        // Label
-        if (isHov || isConn || n.weight >= 9) {
-          ctx.font = `${isHov ? 500 : 400} 10.5px var(--font-code, monospace)`
-          ctx.fillStyle = isHov ? '#fff' : dim ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)'
-          ctx.textAlign = 'center'
-          ctx.fillText(n.label, n.x, n.y - r - 5)
-        }
-      })
-
-      // Update active state for panel — only when the hovered node actually changes
-      const hNode = nodes.find(n => n.id === hoverId) ?? null
-      setActive(prev => {
-        if (hNode === null && prev === null) return prev
-        if (hNode !== null && prev !== null && hNode.id === prev.node.id) return prev
-        return hNode ? { node: hNode, connected: hNode.connections } : null
-      })
-
-      animFrame = requestAnimationFrame(draw)
-    }
-
-    animFrame = requestAnimationFrame(draw)
-    return () => {
-      cancelAnimationFrame(animFrame)
-      obsVis.disconnect()
-    }
-  }, [size])
-
-  const onMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current?.getBoundingClientRect()
-    if (!rect) return
-    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  const activateHover = (id: string) => {
+    if (hoverClearTimerRef.current !== null) clearTimeout(hoverClearTimerRef.current)
+    hoverClearTimerRef.current = null
+    setActiveId(id)
   }
-  const onMouseLeave = () => { mouseRef.current = { x: -999, y: -999 } }
+
+  const clearHover = () => {
+    if (hoverClearTimerRef.current !== null) clearTimeout(hoverClearTimerRef.current)
+    hoverClearTimerRef.current = setTimeout(() => {
+      setActiveId(selectedRef.current)
+      hoverClearTimerRef.current = null
+    }, 140)
+  }
+
+  const animationActive = visible && !reducedMotion
 
   return (
-    <div className="relative w-full">
-      <canvas
-        ref={canvasRef}
-        width={size.w}
-        height={size.h}
-        className="w-full block rounded-sm"
-        style={{ background: 'var(--surface-1)', cursor: 'none' }}
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
-        aria-label="Interactive knowledge graph"
-        role="img"
-      />
+    <div className="pt-2">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(230px,270px)] items-start gap-editorial-gap max-tablet:grid-cols-1">
+        <div className="min-w-0">
+          <div className="relative aspect-[20/13] w-full overflow-hidden bg-background-soft max-mobile:h-[clamp(520px,145vw,700px)] max-mobile:aspect-auto" ref={frameRef}>
+            <svg
+          className="knowledge-graph-svg absolute inset-0 block size-full overflow-visible"
+          viewBox={`0 0 ${size.width} ${size.height}`}
+          role="group"
+          aria-label="Interactive technology relationship graph"
+        >
+          <g className="[fill:none]" aria-hidden="true">
+            {edges.map(edge => {
+              if (!activeId || (edge.from !== activeId && edge.to !== activeId)) return null
+              const from = positionById.get(edge.from)
+              const to = positionById.get(edge.to)
+              if (!from || !to) return null
+              const forward = edge.from === activeId
+              const source = forward ? from : to
+              const destination = forward ? to : from
+              const path = edgePath(source, destination, edge.index)
+              return (
+                <g key={`${edge.id}:${activeId}`} className={`knowledge-edge${animationActive ? ' is-animating' : ''}${reducedMotion ? ' is-static' : ''}`}>
+                  <path className="knowledge-edge-flow" d={path} pathLength="1" stroke={edge.color} />
+                  {animationActive && !reducedMotion && (
+                    <circle className="knowledge-edge-head" r="2.5" fill={edge.color}>
+                      <animateMotion dur="900ms" path={path} fill="freeze" />
+                      <animate attributeName="opacity" dur="900ms" values="1;1;0" keyTimes="0;0.82;1" fill="freeze" />
+                    </circle>
+                  )}
+                </g>
+              )
+            })}
+          </g>
 
-      {/* Info panel */}
-      <div
-        className="absolute top-4 right-4 glass rounded-sm p-4 w-56 transition-all duration-300"
-        style={{
-          opacity:    active ? 1 : 0,
-          transform:  active ? 'translateX(0)' : 'translateX(8px)',
-          pointerEvents: 'none',
-        }}
-        aria-hidden="true"
-      >
-        {active && (
-          <>
-            <div className="flex items-center gap-2 mb-3">
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: CATEGORY_COLOR[active.node.category] ?? '#888' }}
-              />
-              <span className="t-label" style={{ color: CATEGORY_COLOR[active.node.category] }}>
-                {active.node.category}
-              </span>
-            </div>
-            <div className="text-sm font-light mb-2" style={{ color: 'var(--text-0)' }}>
-              {active.node.label}
-            </div>
-            <div className="t-system mb-3">since {active.node.since}</div>
-            {active.node.projects.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <div className="t-system mb-1" style={{ color: 'var(--text-3)' }}>used in</div>
-                {active.node.projects.map(p => (
-                  <span key={p} className="t-system" style={{ color: 'var(--pulse)' }}>{p}</span>
-                ))}
-              </div>
-            )}
-            <div className="wire-h my-3" />
-            <div className="t-system" style={{ color: 'var(--text-3)' }}>
-              {active.connected.length} connections
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Legend */}
-      <div className="absolute bottom-4 left-4 flex flex-wrap gap-3">
-        {Object.entries(CATEGORY_COLOR).map(([cat, color]) => (
-          <div key={cat} className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-            <span className="t-system">{cat}</span>
+          <g>
+            {safeNodes.map((node, index) => {
+              const center = positionById.get(node.id)
+              if (!center) return null
+              const radius = 7 + node.weight * 0.58
+              const neighbors = neighborsById.get(node.id) ?? new Set<string>()
+              const active = activeId
+              const isActive = active === node.id
+              const isConnected = active !== null && neighbors.has(active)
+              const isDimmed = active !== null && !isActive && !isConnected
+              const labelAbove = compact
+                ? (Math.floor(index / 4) + index % 4) % 2 === 0
+                : index % 2 === 0
+              return (
+                <g
+                  key={node.id}
+                  className={`knowledge-graph-node${isActive ? ' is-active' : ''}${isDimmed ? ' is-dimmed' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${node.label}, ${node.category}, ${node.connections.length} connections`}
+                  aria-pressed={selectedId === node.id}
+                  onPointerEnter={() => activateHover(node.id)}
+                  onPointerLeave={clearHover}
+                  onFocus={() => activateHover(node.id)}
+                  onBlur={clearHover}
+                  onClick={() => selectNode(node.id)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      selectNode(node.id)
+                    }
+                  }}
+                >
+                  <polygon
+                    className="knowledge-graph-diamond"
+                    points={diamondPoints(center, radius)}
+                    stroke={CATEGORY_TONES[node.category]}
+                  />
+                  <text
+                    className="knowledge-graph-label"
+                    x={center.x}
+                    y={center.y + (labelAbove ? -radius - 9 : radius + 15)}
+                    textAnchor="middle"
+                    dominantBaseline={labelAbove ? 'auto' : 'middle'}
+                  >
+                    {node.label}
+                  </text>
+                </g>
+              )
+            })}
+          </g>
+            </svg>
           </div>
-        ))}
+
+          <div className="mt-[14px] flex flex-wrap gap-x-[14px] gap-y-2 max-mobile:gap-x-[10px] max-mobile:gap-y-[7px]" aria-label="Technology categories">
+            {categories.map(category => (
+              <span className="inline-flex items-center gap-[6px] text-copy-secondary font-portfolio-code text-[.56rem] capitalize max-mobile:text-[.52rem]" key={category}>
+                <i className="inline-block size-[7px] shrink-0 rounded-full" style={{ backgroundColor: CATEGORY_TONES[category] }} />{category}
+              </span>
+            ))}
+          </div>
+          <p className="mt-3 mb-0 px-0 text-muted font-portfolio-code text-[.58rem] leading-[1.6] max-mobile:px-[2px]">Connections show technologies used together across projects.</p>
+        </div>
+
+        <aside
+          ref={panelRef}
+          className="w-full min-w-0 border-l border-border-subtle pl-editorial-gap max-tablet:border-l-0 max-tablet:border-t max-tablet:pt-editorial-space max-tablet:pl-0"
+          aria-live={selectedId !== null ? 'polite' : 'off'}
+          aria-atomic="true"
+          aria-label="Technology details"
+          onPointerEnter={() => {
+            if (hoverClearTimerRef.current !== null) clearTimeout(hoverClearTimerRef.current)
+            hoverClearTimerRef.current = null
+          }}
+          onPointerLeave={clearHover}
+          onFocus={() => {
+            if (hoverClearTimerRef.current !== null) clearTimeout(hoverClearTimerRef.current)
+            hoverClearTimerRef.current = null
+          }}
+          onBlur={clearHover}
+        >
+          {activeNode ? (
+            <>
+              <div className="flex items-center gap-2 text-accent font-portfolio-code text-[.58rem] tracking-[.08em] uppercase">
+                <span className="size-[7px] shrink-0 rounded-full" style={{ backgroundColor: CATEGORY_TONES[activeNode.category] }} />
+                <span>{activeNode.category}</span>
+              </div>
+              <h3 className="mt-[10px] mb-1 text-foreground font-portfolio-display text-[1.12rem] font-medium tracking-[-.035em] leading-[1.2] max-mobile:text-[.95rem]">{activeNode.label}</h3>
+              <p className="m-0 text-muted font-portfolio-code text-[.6rem]">Used since {activeNode.since}</p>
+              {activeNode.projects.length > 0 && (
+                <div className="mt-3 grid gap-[5px] text-muted font-portfolio-code text-[.58rem] uppercase">
+                  <span>Used in</span>
+                  <ul className="m-0 flex list-none flex-wrap gap-x-[10px] gap-y-1 p-0 text-copy-secondary font-portfolio-body text-[.68rem] normal-case max-mobile:gap-x-[7px] max-mobile:gap-y-[3px]">{activeNode.projects.map(id => <li key={id}>{PROJECT_NAMES[id] ?? id}</li>)}</ul>
+                </div>
+              )}
+              <p className="mt-3 mb-0 text-muted font-portfolio-code text-[.6rem]">{activeNode.connections.length} connections</p>
+              <button className="my-[5px] -mb-[5px] min-h-9 cursor-pointer border-0 bg-transparent p-0 text-accent text-[.65rem] underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px]" type="button" onClick={clearSelection}>Clear selection</button>
+            </>
+          ) : (
+            <p className="m-0 text-muted font-portfolio-code text-[.66rem] leading-[1.7]">Hover, focus, or select a diamond to inspect a technology.</p>
+          )}
+        </aside>
       </div>
+      <div className="h-editorial-space" aria-hidden="true" />
+      <details className="mx-auto w-full max-w-[980px]">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-copy-secondary text-[.82rem] tracking-[.04em] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px]">Browse technologies with keyboard <span className='text-accent'>+</span></summary>
+        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-x-4 gap-y-1 p-0 pb-4">
+          {safeNodes.map(node => (
+          <li key={node.id}>
+            <button className="flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 border border-border-subtle bg-transparent px-2 py-1.25 text-left text-sm! text-copy-secondary hover:border-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px] aria-pressed:border-accent aria-pressed:text-foreground" type="button" aria-pressed={selectedId === node.id} onClick={() => selectNode(node.id)}>
+              {node.label}<span className="text-muted font-portfolio-code text-[.55rem] capitalize">{node.category}</span>
+            </button>
+          </li>
+        ))}</ul>
+      </details>
     </div>
   )
 }

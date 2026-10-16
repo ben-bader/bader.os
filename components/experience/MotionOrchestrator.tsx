@@ -38,7 +38,10 @@ export default function MotionOrchestrator() {
       chapters.forEach(chapter => {
         const heading = chapter.querySelector<HTMLElement>('h1, h2')
         const description = chapter.querySelector<HTMLElement>('.section-description')
-        if (!heading) return
+        // Keep the initially visible, server-rendered hero heading untouched
+        // until hydration has completed. GSAP's inline transform can otherwise
+        // race React's hydration and produce an attribute mismatch.
+        if (!heading || heading.id === 'hero-title') return
 
         const timeline = gsap.timeline({
           scrollTrigger: {
@@ -87,39 +90,15 @@ export default function MotionOrchestrator() {
       if (!active) {
         if (projectFocusBus.getSnapshot().id !== id) return
         if (reducedMotion) {
-          projectFocusBus.set(null, 0)
+          projectFocusBus.set(null)
           return
         }
         focusTween?.kill()
-        const progress = { value: projectFocusBus.getSnapshot().progress }
-        focusTween = gsap.to(progress, {
-          value: 0,
-          duration: 0.24,
-          ease: 'power1.out',
-          onUpdate: () => projectFocusBus.setProgress(progress.value),
-          onComplete: () => projectFocusBus.set(null, 0),
-        })
+        focusTween = gsap.delayedCall(0.24, () => projectFocusBus.set(null))
         return
       }
-      const surface = record.querySelector<HTMLElement>('.technical-flow') ?? record
-      const bounds = surface.getBoundingClientRect()
-      const snapshot = projectFocusBus.getSnapshot()
-      const startProgress = reducedMotion ? 1 : snapshot.id === id ? snapshot.progress : 0
       focusTween?.kill()
-      projectFocusBus.set(id, startProgress, {
-        x: bounds.left,
-        y: bounds.top,
-        width: bounds.width,
-        height: bounds.height,
-      })
-      if (reducedMotion) return
-      const progress = { value: startProgress }
-      focusTween = gsap.to(progress, {
-        value: 1,
-        duration: 0.48,
-        ease: 'power2.out',
-        onUpdate: () => projectFocusBus.setProgress(progress.value),
-      })
+      projectFocusBus.set(id)
     }
 
     const enter = (event: Event) => {
@@ -153,19 +132,6 @@ export default function MotionOrchestrator() {
       record.style.setProperty('--pointer-x', `${((clientX - bounds.left) / Math.max(bounds.width, 1)) * 100}%`)
       record.style.setProperty('--pointer-y', `${((clientY - bounds.top) / Math.max(bounds.height, 1)) * 100}%`)
     }
-    const refreshFocusRect = () => {
-      const id = projectFocusBus.getSnapshot().id
-      if (!id) return
-      const article = document.getElementById(id)?.closest<HTMLElement>('.project-record')
-      const surface = article?.querySelector<HTMLElement>('.technical-flow') ?? article
-      if (!surface) return
-      const bounds = surface.getBoundingClientRect()
-      projectFocusBus.updateRect({ x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height })
-    }
-    const resizeObserver = new ResizeObserver(refreshFocusRect)
-    records.forEach(record => resizeObserver.observe(record))
-    window.addEventListener('resize', refreshFocusRect, { passive: true })
-
     document.addEventListener('pointerover', enter)
     document.addEventListener('pointerout', leave)
     document.addEventListener('focusin', enter)
@@ -177,8 +143,6 @@ export default function MotionOrchestrator() {
       document.removeEventListener('focusin', enter)
       document.removeEventListener('focusout', leave)
       unsubscribePointer()
-      resizeObserver.disconnect()
-      window.removeEventListener('resize', refreshFocusRect)
       records.forEach(record => gsap.killTweensOf(record))
       focusTween?.kill()
     }
