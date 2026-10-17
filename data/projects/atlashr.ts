@@ -5,7 +5,7 @@ const project: Project = {
   summary: 'An HR management platform with Spring Boot backend services and a Next.js dashboard.',
   description: 'AtlasHR is a human resources platform I worked on during my full-stack internship at 2SIS Technologies. My contributions spanned backend services, REST APIs, PostgreSQL data work, and a Next.js dashboard.',
   technologies: ['Spring Boot', 'Next.js', 'PostgreSQL', 'REST APIs','Java','Docker','Microservices','Git'], repositoryUrl: null,
-  status: 'completed', period: '2025-2026',
+  status: 'completed', period: '2026',
   featured: true,
   highlights: ['Backend and dashboard work were part of the same HR platform.', 'Contributions spanned service, API, database, and interface work.'],
   features: ['Human resources management platform.', 'Backend services with REST APIs.', 'Next.js dashboard.'],

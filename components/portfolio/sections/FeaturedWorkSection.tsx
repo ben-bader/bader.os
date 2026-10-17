@@ -88,7 +88,7 @@ export default function FeaturedWorkSection() {
                 )}
                 {project.role && (
                   <details className="contribution-details group/contrib mt-6">
-                    <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 text-foreground text-[.75rem]">
+                    <summary className="flex min-h-12 border-y border-white/20 cursor-pointer list-none items-center justify-between gap-4 text-foreground text-[.75rem]">
                       What I worked on{" "}
                       <span
                         className="text-accent text-[1.1rem] transition-transform duration-fast group-open/contrib:rotate-45"
@@ -97,7 +97,7 @@ export default function FeaturedWorkSection() {
                         +
                       </span>
                     </summary>
-                    <ul className="m-0 grid list-none gap-[9px] p-0 pb-[18px] text-muted text-[.75rem]">
+                    <ul className="mt-2 grid list-none gap-[9px] p-0 pb-[18px] text-muted text-[.75rem]">
                       <li className="relative pl-[14px] before:absolute before:left-0 before:top-[.72em] before:h-px before:w-[5px] before:bg-accent before:content-['']">
                         {project.role}
                       </li>
@@ -134,7 +134,8 @@ export default function FeaturedWorkSection() {
           );
         })}
       </div>
-      <div className="mt-editorial-space">
+      <div className="h-[0.5px] my-6 w-full bg-white/20" />
+      <div className="">
         <div className="mb-editorial-gap flex items-baseline justify-between gap-6 max-mobile:items-start max-mobile:flex-col max-mobile:gap-2">
           <p className="m-0 flex items-center gap-3 text-copy-secondary font-portfolio-body text-[.7rem] font-medium leading-[1.5] tracking-[.075em] uppercase [&>span:first-child]:text-accent">
             <span>Also</span> Academic &amp; explorations
@@ -145,92 +146,93 @@ export default function FeaturedWorkSection() {
         </div>
         <div className="flex justify-between mr-24">
           {supportingProjects.map(({ project }, index) => (
-            <article className="flex gap-3" key={project.id}>
-              {index == 1 && 
-                  <div className="h-full w-[0.5px] bg-white/30 mr-14"/>
-              }
-              <div className="min-w-0">
-                <p className="m-0 text-muted font-portfolio-body text-metadata tracking-[.04em] uppercase">
-              <span className="pt-[3px] text-accent font-portfolio-code text-[.7rem]">
-                {String(index + 1).padStart(2, "0")}
-              </span>{" "}
-                  {project.category}
-                  {project.period && (
-                    <>
-                      {" "}
-                      <span className="text-accent">·</span> {project.period}
-                    </>
-                  )}
-                  {project.status && (
-                    <>
-                      {" "}
-                      <span className="text-accent">·</span>{" "}
-                      {project.status.replace("-", " ")}
-                    </>
-                  )}
-                </p>
+            <article className="flex gap-3 " key={project.id}>
+              <div className="min-w-0 w-96 h-96 work-visual flex flex-col justify-between items-stretch p-6 rounded-xs ">
                 <div>
-                <h3 className="mt-2 mb-0 font-portfolio-display text-[clamp(1.6rem,2.5vw,2.4rem)] font-medium tracking-[-.06em] transition-colors duration-fast group-hover:text-accent">
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="flex flex-wrap items-center gap-x-1 text-muted font-portfolio-body text-metadata tracking-[.04em] uppercase">
+                      <span className="text-accent font-portfolio-code">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      {project.category}
+                    </p>
+
+                    {project.period && (
+                      <span className="shrink-0 text-muted font-portfolio-body text-metadata">
+                        {project.period}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="mt-4 font-portfolio-display text-[clamp(1.6rem,2.5vw,2.4rem)] font-medium tracking-[-.06em] transition-colors duration-fast group-hover:text-accent">
+                      <Link
+                        className="group text-inherit no-underline hover:text-accent"
+                        href={`/projects/${project.id}`}
+                      >
+                        {project.title}
+                      </Link>
+                    </h3>
+
+                    <p className="max-w-[680px] mt-3 text-copy-secondary text-[.82rem] leading-[1.7]">
+                      {project.summary}
+                    </p>
+
+                    <ul className="tech-list mt-3 mb-0 flex list-none flex-wrap gap-[7px] p-0">
+                      {project.technologies.slice(0, 5).map((technology) => (
+                        <li key={technology}>{technology}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Actions: distributed across the card's width */}
+                <div className="flex items-center gap-6">
                   <Link
-                    className="group text-inherit no-underline hover:text-accent"
+                    className="group inline-flex min-h-10 items-center gap-[7px] bg-accent text-black px-3 rounded-xs no-underline text-[.74rem]"
                     href={`/projects/${project.id}`}
                   >
-                    {project.title}
-                  </Link>
-                </h3>
-              </div>
-              <div className="col-start-2 min-w-0 wide:col-start-auto">
-                <p className="m-0 max-w-[680px] text-copy-secondary text-[.82rem] leading-[1.7]">
-                  {project.summary}
-                </p>
-                <ul className="tech-list mt-3 mb-0 flex list-none flex-wrap gap-[7px] p-0">
-                  {project.technologies.slice(0, 5).map((technology) => (
-                    <li key={technology}>{technology}</li>
-                  ))}
-                </ul>
-                <div className="mt-3 flex flex-wrap items-center gap-x-5">
-                  <Link
-                    className="group inline-flex min-h-10 items-center gap-[7px] text-accent no-underline text-[.74rem] hover:text-accent-hover"
-                    href={`/projects/${project.id}`}
-                  >
-                    View details{" "}
+                    View details
                     <ArrowRight
                       className="transition-transform duration-fast group-hover:translate-x-1"
                       aria-hidden="true"
                       size={14}
                     />
                   </Link>
-                  {project.repositoryUrl && (
+
+                  {project.repositoryUrl ? (
                     <a
-                      className="button button-secondary min-h-9 px-2 text-[.72rem]"
+                      className="button button-secondary inline-flex min-h-10 items-center gap-[7px] px-3 text-[.72rem]"
                       href={project.repositoryUrl}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Repository <ArrowUpRight aria-hidden="true" size={14} />
+                      Repository
+                      <ArrowUpRight aria-hidden="true" size={14} />
                     </a>
+                  ) : (
+                    <span aria-hidden="true" />
                   )}
-                </div>
                 </div>
               </div>
             </article>
           ))}
-        </div>
-        <div className="mt-editorial-space flex flex-wrap items-center justify-between gap-[18px]">
-          <p className="m-0 text-muted text-[.76rem]">
-            The full archive also includes smaller web projects and experiments.
-          </p>
-          <Link
-            className="button button-primary group min-h-12 gap-[22px] px-4 text-[.8rem]"
-            href="/projects"
-          >
-            More projects{" "}
-            <ArrowRight
-              className="transition-transform duration-fast group-hover:translate-x-1"
-              aria-hidden="true"
-              size={16}
-            />
-          </Link>
+          <div className="flex flex-col justify-center items-start gap-10 w-96">
+            <p className="text-lg w-fit bg-accent text-black">
+              The full archive also includes smaller web projects and
+              experiments.
+            </p>
+            <Link
+              className="button button-secondary text-accent! group min-h-12 gap-[22px] px-4 text-[.8rem]"
+              href="/projects"
+            >
+              More projects{" "}
+              <ArrowRight
+                className="transition-transform duration-fast group-hover:translate-x-1"
+                aria-hidden="true"
+                size={16}
+              />
+            </Link>
+          </div>
         </div>
       </div>
     </section>

@@ -331,8 +331,8 @@ export default function KnowledgeGraph() {
       </div>
       <div className="h-editorial-space" aria-hidden="true" />
       <details className="mx-auto w-full max-w-[980px]">
-        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-copy-secondary text-[.82rem] tracking-[.04em] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px]">Browse technologies with keyboard <span className='text-accent'>+</span></summary>
-        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-x-4 gap-y-1 p-0 pb-4">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-copy-secondary text-[.82rem] tracking-[.04em] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px] border-y border-muted px-4">Browse technologies with keyboard <span className='text-accent'>+</span></summary>
+        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-x-4 gap-y-1 p-0 py-4">
           {safeNodes.map(node => (
           <li key={node.id}>
             <button className="flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 border border-border-subtle bg-transparent px-2 py-1.25 text-left text-sm! text-copy-secondary hover:border-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px] aria-pressed:border-accent aria-pressed:text-foreground" type="button" aria-pressed={selectedId === node.id} onClick={() => selectNode(node.id)}>
