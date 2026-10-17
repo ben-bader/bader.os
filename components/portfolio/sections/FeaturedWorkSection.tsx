@@ -144,9 +144,9 @@ export default function FeaturedWorkSection() {
             More projects from the same practice.
           </p>
         </div>
-        <div className="flex justify-between mr-24">
+        <div className="flex justify-between gap-6 mr-24">
           {supportingProjects.map(({ project }, index) => (
-            <article className="flex gap-3 " key={project.id}>
+            <article className="flex gap-3" key={project.id}>
               <div className="min-w-0 w-96 h-96 work-visual flex flex-col justify-between items-stretch p-6 rounded-xs ">
                 <div>
                   <div className="flex items-start justify-between gap-4">
