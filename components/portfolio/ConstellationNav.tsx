@@ -8,7 +8,7 @@ const starPoints: Record<(typeof portfolioSections)[number]['id'], { x: number; 
   about: { x: 61, y: 57 },
   capabilities: { x: 22, y: 96 },
   journey: { x: 87, y: 103 },
-  contact: { x: 126, y: 143 },
+  contact: { x: 126, y: 137 },
 }
 
 const connections = [
@@ -24,8 +24,8 @@ export default function ConstellationNav() {
   const activeSection = portfolioSections.find(section => section.id === activeId) ?? portfolioSections[0]
 
   return (
-    <nav className="fixed right-[max(14px,env(safe-area-inset-right))] top-1/2 z-navigation w-40 -translate-y-1/2 text-center max-mobile:top-auto max-mobile:right-[max(4px,env(safe-area-inset-right))] max-mobile:bottom-[max(10px,env(safe-area-inset-bottom))] max-mobile:translate-y-0" aria-label="Portfolio sections">
-      <div className="relative mx-auto h-40 w-[148px]">
+    <nav className="fixed right-page-gutter top-[calc(78px+10px)] z-navigation w-[148px] text-center max-mobile:right-[max(12px,env(safe-area-inset-right))] max-mobile:top-[calc(68px+8px)]" aria-label="Portfolio sections">
+      <div className="relative h-40 w-[148px]">
         <svg className="constellation-lines pointer-events-none absolute inset-0 size-full overflow-visible" viewBox="0 0 148 160" aria-hidden="true">
           {connections.map(([from, to]) => (
             <line

@@ -1,9 +1,10 @@
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { identity } from '@/lib/content'
+import HeroSystemBlueprint from '@/components/experience/HeroSystemBlueprint'
 
 export default function HeroSection() {
   return (
-    <section className="relative mx-auto flex min-h-[min(700px,calc(100svh-78px))] w-full max-w-page items-center px-page-gutter pt-[clamp(36px,4vw,56px)] pb-[clamp(44px,5.5vw,76px)] max-mobile:min-h-[min(680px,calc(100svh-112px))] max-mobile:items-start max-mobile:pt-11 max-mobile:pb-[60px]" id="home" aria-labelledby="hero-title">
+    <section className="relative mx-auto flex min-h-[min(700px,calc(100svh-78px))] w-full max-w-page items-center px-page-gutter pt-[clamp(36px,4vw,56px)] pb-[clamp(44px,5.5vw,76px)] max-mobile:min-h-[min(680px,calc(100svh-112px))] max-mobile:items-start max-mobile:pt-[205px] max-mobile:pb-[60px]" id="home" aria-labelledby="hero-title">
         <div className="relative z-content w-[min(760px,62%)] py-3 max-tablet:w-[72%] max-mobile:w-full max-mobile:pt-[10px]">
       <p className="m-0 flex items-center gap-[10px] text-copy-secondary font-portfolio-body text-[.7rem] font-medium leading-[1.5] tracking-[.075em] uppercase max-mobile:max-w-[280px] max-mobile:flex-wrap max-mobile:text-[.58rem]"><span className="size-[7px] rounded-full bg-accent shadow-[0_0_16px_rgba(198,243,107,.6)]" aria-hidden="true" />Computer engineering student <i className="text-accent not-italic">·</i> Calais, France</p>
       <h1 className="mt-[clamp(20px,2.8vw,34px)] mb-0 max-w-[850px] font-portfolio-display text-[clamp(3rem,15vw,5.8rem)] mobile:text-[clamp(4.5rem,9.3vw,9.5rem)] font-medium leading-[.87] tracking-[-.095em] max-mobile:mt-5 max-mobile:leading-[.87]" id="hero-title">Software,<br /><em className="text-accent font-normal">made</em> to<br />make sense.</h1>
@@ -15,14 +16,10 @@ export default function HeroSection() {
         </div>
       </div>
         </div>
-        <div className="hero-art" aria-hidden="true">
-      <div className="art-orbit art-orbit-one" />
-      <div className="art-orbit art-orbit-two" />
-      <div className="art-core"><code><span>const</span> build =<br />() =&gt; <span>&quot;B&quot;</span>;</code></div>
-      <span className="hero-letter-fallback">B</span>
-      <span className="art-caption">&quot;A system is art<br />more than its parts...&quot;</span>
-      <span className="art-coordinate">01 / 06</span>
-        </div>
+      <div className="pointer-events-none absolute right-[2%] top-1/2 z-0 aspect-[25/16] w-[min(49vw,780px)] -translate-y-[52%] max-tablet:right-[2%] max-tablet:top-1/2 max-tablet:w-[min(56vw,580px)] max-tablet:opacity-[.25] max-mobile:top-1/2 max-mobile:right-0 max-mobile:bottom-auto max-mobile:w-screen max-mobile:max-w-[440px] max-mobile:-translate-y-1/2 max-mobile:opacity-[.58]">
+        <HeroSystemBlueprint />
+        <span className="hero-letter-fallback" aria-hidden="true">B</span>
+      </div>
         <a className="absolute bottom-[34px] left-page-gutter inline-flex items-center gap-3 text-muted font-portfolio-body text-[.63rem] tracking-[.05em] uppercase no-underline max-mobile:hidden" href="#work"><span>Scroll to explore</span><ArrowDownRight className="text-accent" aria-hidden="true" size={15} /></a>
       </section>
   )
