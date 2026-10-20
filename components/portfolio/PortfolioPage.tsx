@@ -12,8 +12,10 @@ export default function PortfolioPage() {
   return (
     <>
       <SiteHeader />
+      <span className='max-sm:hidden'>
       <ConstellationNav />
-      <main id="main-content">
+      </span>
+      <main id="main-content" className='overflow-hidden'>
         <HeroSection />
         <FeaturedWorkSection />
         <AboutSection />
